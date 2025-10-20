@@ -1,0 +1,504 @@
+{% extends 'm.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper">
+  <div class="container-xxl flex-grow-1 container-p-y">
+    <div class="row g-6 mb-6">
+      <div class="col-md-10 mx-auto">
+        <div class="card shadow-sm rounded">
+          <h5 class="card-header bg-primary text-white">
+            {% if form.instance.pk %}Edit Student and Enrollment{% else %}Add New Student and Enrollment{% endif %}
+          </h5>
+          <div class="card-body">
+            <form method="post" enctype="multipart/form-data" novalidate>
+              {% csrf_token %}
+              {% if form.errors %}
+  <div class="alert alert-danger">{{ form.errors }}</div>
+{% endif %}
+
+              <!-- Student Type Selection -->
+              <div class="mb-3">
+                <label class="form-label">Student Type</label>
+                <div>
+                  {{ form.student_type }}
+                  {{ form.student_type.errors }}
+                </div>
+              </div>
+
+              <!-- Previous Student Dropdown -->
+              <div class="mb-3" id="previous-student-div" style="display:none;">
+  <label for="{{ form.previous_student.id_for_label }}" class="form-label">Select Existing Student (by Name)</label>
+  {{ form.previous_student }}{{ form.previous_student.errors }}
+</div>
+
+<!-- Student Information -->
+<div id="student-info-section">
+  <h6 class="text-primary mb-3">Student Information</h6>
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label for="{{ form.full_name.id_for_label }}" class="form-label">Full Name</label>
+      {{ form.full_name }}{{ form.full_name.errors }}
+    </div>
+    <div class="col-md-6 mb-3">
+      <label for="{{ form.father_name.id_for_label }}" class="form-label">Father's Name</label>
+      {{ form.father_name }}{{ form.father_name.errors }}
+    </div>
+
+
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ form.gender.id_for_label }}" class="form-label">Gender</label>
+                    {{ form.gender }}{{ form.gender.errors }}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ form.dob.id_for_label }}" class="form-label">Date of Birth</label>
+                    {{ form.dob }}{{ form.dob.errors }}
+                  </div>
+                 <div class="col-md-6 mb-3">
+  <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+  {{ form.email }}{{ form.email.errors }}
+</div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ form.contact.id_for_label }}" class="form-label">Contact Number</label>
+                    {{ form.contact }}{{ form.contact.errors }}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ form.emergency_contact_number.id_for_label }}" class="form-label">Emergency Contact Number</label>
+                    {{ form.emergency_contact_number }}{{ form.emergency_contact_number.errors }}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ form.address.id_for_label }}" class="form-label">Address</label>
+                    {{ form.address }}{{ form.address.errors }}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ form.state.id_for_label }}" class="form-label">State</label>
+                    {{ form.state }}{{ form.state.errors }}
+                  </div>
+                  <div class="col-md-6 mb-3">
+  <label for="{{ form.city.id_for_label }}" class="form-label">City</label>
+  <select id="{{ form.city.id_for_label }}" name="city" class="form-select">
+    <option value="">---------</option>
+    <!-- Options will be filled by JS -->
+  </select>
+  {{ form.city.errors }}
+</div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ form.pincode.id_for_label }}" class="form-label">Pincode</label>
+                    {{ form.pincode }}{{ form.pincode.errors }}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ form.photo.id_for_label }}" class="form-label">Profile Photo (Max 500KB)</label>
+                    {% if form.instance.photo %}
+                      <div>
+                        <img src="{{ form.instance.photo.url }}" style="max-width:120px; margin-top:10px;">
+                      </div>
+                    {% endif %}
+                    {{ form.photo }}{{ form.photo.errors }}
+                    <img id="photoPreview" style="display:none;max-width:120px;margin-top:10px;border-radius:5px;" />
+                    <button type="button" id="openWebcamBtn" class="btn btn-sm btn-secondary mt-2">Capture via Webcam</button>
+                    <div id="webcamModal" style="display:none;position:fixed;top:10%;left:50%;transform:translateX(-50%);background:#fff;padding:20px;z-index:9999;border-radius:8px;">
+                      <video id="webcamVideo" width="320" height="240" autoplay></video>
+                      <button type="button" id="captureBtn" class="btn btn-primary btn-sm">Capture</button>
+                      <button type="button" id="closeWebcamBtn" class="btn btn-secondary btn-sm">Close</button>
+                      <canvas id="webcamCanvas" width="320" height="240" style="display:none;"></canvas>
+                    </div>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ form.documents.id_for_label }}" class="form-label">Documents</label>
+                    {% if form.instance.documents %}
+                      <div>
+                        <a href="{{ form.instance.documents.url }}" target="_blank">Current Document</a>
+                      </div>
+                    {% endif %}
+                    {{ form.documents }}{{ form.documents.errors }}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ form.referral_source.id_for_label }}" class="form-label">How did you find us?</label>
+                    {{ form.referral_source }}{{ form.referral_source.errors }}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ form.referred_by_student_id.id_for_label }}" class="form-label">Referred By (Student ID)</label>
+                    {{ form.referred_by_student_id }}{{ form.referred_by_student_id.errors }}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ form.referred_by_name.id_for_label }}" class="form-label">Referred By Name (if not a student)</label>
+                    {{ form.referred_by_name }}{{ form.referred_by_name.errors }}
+                  </div>
+                </div>
+              </div>
+              <hr>
+              <!-- Enrollment & Payment -->
+              <h6 class="text-primary mb-3">Enrollment & Payment</h6>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="{{ form.course.id_for_label }}" class="form-label">Course</label>
+                  {{ form.course }}{{ form.course.errors }}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Course Duration</label>
+                  <input type="text" id="course_duration" class="form-control" readonly>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Course Fee</label>
+                  <input type="text" id="course_fee" class="form-control" readonly>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="{{ form.discount.id_for_label }}" class="form-label">Discount</label>
+                  {{ form.discount }}{{ form.discount.errors }}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Final Amount</label>
+                  <input type="text" id="final_amount" class="form-control" readonly>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="{{ form.payment_method.id_for_label }}" class="form-label">Payment Method</label>
+                  {{ form.payment_method }}{{ form.payment_method.errors }}
+                </div>
+                <div class="col-md-6 mb-3" id="installmentsDiv" style="display:none;">
+                  <label for="{{ form.total_installments.id_for_label }}" class="form-label">Total Installments</label>
+                  {{ form.total_installments }}{{ form.total_installments.errors }}
+                </div>
+                <div class="col-md-6 mb-3" id="initialPaymentDiv" style="display:none;">
+                  <label for="{{ form.initial_payment.id_for_label }}" class="form-label">Initial Payment</label>
+                  {{ form.initial_payment }}
+                  <div id="initialPaymentError" class="text-danger"></div>
+                  {{ form.initial_payment.errors }}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Amount Due (current period)</label>
+                  <input type="text" id="amount_due" class="form-control" readonly>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Amount Remaining</label>
+                  <input type="text" id="amount_remaining" class="form-control" readonly>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="{{ form.payment_mode.id_for_label }}" class="form-label">Payment Mode</label>
+                  {{ form.payment_mode }}{{ form.payment_mode.errors }}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="{{ form.batch_time.id_for_label }}" class="form-label">Batch Time</label>
+                  {{ form.batch_time }}{{ form.batch_time.errors }}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="{{ form.due_date.id_for_label }}" class="form-label">Due Date</label>
+                  {{ form.due_date }}{{ form.due_date.errors }}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="{{ form.notes.id_for_label }}" class="form-label">Notes</label>
+                  {{ form.notes }}{{ form.notes.errors }}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="{{ form.enrollment_date.id_for_label }}" class="form-label">Enrollment Date</label>
+                  {{ form.enrollment_date }}{{ form.enrollment_date.errors }}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="{{ form.status.id_for_label }}" class="form-label">Enrollment Status</label>
+                  {{ form.status }}{{ form.status.errors }}
+                </div>
+              </div>
+
+              <div class="text-center">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a href="{% url 'student_list' %}" class="btn btn-secondary">Back</a>
+              </div>
+            </form>
+          </div>
+        </div>
+    
+
+
+
+<script>
+// Student Type Toggle Logic
+function toggleStudentFields() {
+  var studentType = document.querySelector('input[name="student_type"]:checked').value;
+  var studentInfoSection = document.getElementById('student-info-section');
+  var previousStudentDiv = document.getElementById('previous-student-div');
+  if (studentType === 'previous') {
+    studentInfoSection.style.display = 'none';
+    previousStudentDiv.style.display = '';
+  } else {
+    studentInfoSection.style.display = '';
+    previousStudentDiv.style.display = 'none';
+  }
+}
+document.addEventListener('DOMContentLoaded', function() {
+  var radios = document.querySelectorAll('input[name="student_type"]');
+  radios.forEach(function(radio) {
+    radio.addEventListener('change', toggleStudentFields);
+  });
+  toggleStudentFields();
+});
+
+// City Dropdown Logic
+const cityMap = {
+  "Andhra Pradesh": [
+    "Visakhapatnam", "Vijayawada", "Guntur", "Nellore", "Kurnool", "Rajahmundry", "Tirupati", "Kakinada", "Anantapur", "Eluru", "Kadapa", "Ongole", "Machilipatnam", "Srikakulam", "Chittoor", "Vizianagaram", "Tenali", "Proddatur", "Nandyal", "Adoni", "Madanapalle", "Bhimavaram", "Hindupur", "Guntakal", "Dharmavaram", "Gudivada", "Tadepalligudem", "Narasaraopet", "Tadipatri", "Amalapuram", "Kavali", "Sattenapalle"
+  ],
+  "Arunachal Pradesh": [
+    "Itanagar", "Naharlagun", "Pasighat", "Tawang", "Bomdila", "Ziro", "Tezu", "Roing", "Aalo", "Daporijo", "Changlang", "Khonsa", "Seppa", "Yingkiong", "Anini"
+  ],
+  "Assam": [
+    "Guwahati", "Silchar", "Dibrugarh", "Jorhat", "Nagaon", "Tinsukia", "Tezpur", "Bongaigaon", "Karimganj", "Goalpara", "Dhubri", "Sivasagar", "North Lakhimpur", "Diphu", "Barpeta", "Golaghat", "Hailakandi", "Mangaldoi", "Morigaon", "Dhemaji", "Kokrajhar"
+  ],
+  "Bihar": [
+    "Patna", "Gaya", "Muzaffarpur", "Bhagalpur", "Darbhanga", "Purnia", "Arrah", "Begusarai", "Katihar", "Munger", "Chhapra", "Bihar Sharif", "Danapur", "Sasaram", "Hajipur", "Dehri", "Siwan", "Motihari", "Nawada", "Bettiah", "Saharsa", "Aurangabad", "Samastipur", "Khagaria", "Sitamarhi", "Jamalpur", "Buxar", "Jehanabad", "Lakhisarai", "Sheikhpura", "Madhubani", "Madhepura", "Araria", "Kishanganj"
+  ],
+  "Chhattisgarh": [
+    "Raipur", "Bhilai", "Bilaspur", "Korba", "Durg", "Rajnandgaon", "Jagdalpur", "Raigarh", "Ambikapur", "Dhamtari", "Mahasamund", "Kanker", "Kawardha", "Janjgir", "Champa", "Surguja", "Bemetara", "Balod", "Baloda Bazar"
+  ],
+  "Goa": [
+    "Panaji", "Margao", "Vasco da Gama", "Mapusa", "Ponda", "Bicholim", "Curchorem", "Sanquelim", "Canacona", "Valpoi"
+  ],
+  "Gujarat": [
+    "Ahmedabad", "Surat", "Vadodara", "Rajkot", "Bhavnagar", "Jamnagar", "Gandhinagar", "Junagadh", "Anand", "Navsari", "Bharuch", "Mehsana", "Gandhidham", "Nadiad", "Surendranagar", "Morbi", "Porbandar", "Godhra", "Valsad", "Palanpur", "Bhuj", "Veraval", "Botad", "Dahod", "Amreli", "Patan", "Deesa", "Vapi", "Himatnagar", "Jetpur", "Chhota Udaipur"
+  ],
+  "Haryana": [
+    "Gurgaon", "Faridabad", "Panipat", "Ambala", "Yamunanagar", "Rohtak", "Hisar", "Karnal", "Sonipat", "Panchkula", "Bhiwani", "Sirsa", "Bahadurgarh", "Jind", "Kaithal", "Rewari", "Palwal", "Kurukshetra", "Jhajjar", "Fatehabad", "Mahendragarh", "Charkhi Dadri", "Narnaul"
+  ],
+  "Himachal Pradesh": [
+    "Shimla", "Dharamshala", "Mandi", "Solan", "Kullu", "Bilaspur", "Hamirpur", "Chamba", "Una", "Nahan", "Kangra", "Sundernagar", "Palampur", "Paonta Sahib", "Baddi", "Nalagarh", "Keylong", "Reckong Peo"
+  ],
+  "Jharkhand": [
+    "Ranchi", "Jamshedpur", "Dhanbad", "Bokaro Steel City", "Deoghar", "Hazaribagh", "Giridih", "Ramgarh", "Medininagar", "Chakradharpur", "Chaibasa", "Dumka", "Phusro", "Jhumri Telaiya", "Sahibganj", "Godda", "Simdega", "Latehar", "Lohardaga"
+  ],
+  "Karnataka": [
+    "Bengaluru", "Mysore", "Mangalore", "Hubli", "Belgaum", "Davanagere", "Ballari", "Tumakuru", "Shivamogga", "Bidar", "Raichur", "Hospet", "Hassan", "Gadag", "Kolar", "Chikkamagaluru", "Bagalkot", "Chitradurga", "Udupi", "Mandya", "Bijapur", "Karwar", "Haveri", "Ramanagara", "Yadgir", "Sirsi", "Koppal", "Chikballapur"
+  ],
+  "Kerala": [
+    "Thiruvananthapuram", "Kochi", "Kozhikode", "Kollam", "Thrissur", "Alappuzha", "Palakkad", "Malappuram", "Kannur", "Kottayam", "Pathanamthitta", "Idukki", "Kasargod", "Varkala", "Ponnani", "Thalassery", "Kayamkulam", "Muvattupuzha", "Chengannur"
+  ],
+  "Madhya Pradesh": [
+    "Bhopal", "Indore", "Jabalpur", "Gwalior", "Ujjain", "Sagar", "Dewas", "Satna", "Ratlam", "Rewa", "Katni", "Singrauli", "Burhanpur", "Khandwa", "Chhindwara", "Vidisha", "Shivpuri", "Morena", "Bhind", "Neemuch", "Sehore", "Mandsaur", "Hoshangabad", "Itarsi", "Betul", "Chhatarpur", "Seoni", "Damoh", "Panna", "Sidhi", "Shahdol"
+  ],
+  "Maharashtra": [
+    "Mumbai", "Pune", "Nagpur", "Nashik", "Thane", "Aurangabad", "Solapur", "Amravati", "Kolhapur", "Nanded", "Sangli", "Jalgaon", "Akola", "Latur", "Ahmednagar", "Dhule", "Chandrapur", "Parbhani", "Satara", "Beed", "Yavatmal", "Osmanabad", "Panvel", "Ratnagiri", "Wardha", "Gondia", "Bhandara", "Hingoli", "Washim", "Nandurbar", "Baramati", "Malegaon"
+  ],
+  "Manipur": [
+    "Imphal", "Thoubal", "Bishnupur", "Churachandpur", "Ukhrul", "Senapati", "Kakching", "Jiribam", "Tamenglong", "Chandel"
+  ],
+  "Meghalaya": [
+    "Shillong", "Tura", "Jowai", "Nongpoh", "Baghmara", "Williamnagar", "Nongstoin", "Resubelpara", "Mairang", "Mawkyrwat"
+  ],
+  "Mizoram": [
+    "Aizawl", "Lunglei", "Champhai", "Serchhip", "Kolasib", "Saiha", "Lawngtlai", "Mamit"
+  ],
+  "Nagaland": [
+    "Kohima", "Dimapur", "Mokokchung", "Tuensang", "Wokha", "Zunheboto", "Mon", "Phek", "Kiphire", "Longleng", "Peren"
+  ],
+  "Odisha": [
+    "Bhubaneswar", "Cuttack", "Rourkela", "Berhampur", "Sambalpur", "Puri", "Balasore", "Bhadrak", "Baripada", "Jharsuguda", "Angul", "Dhenkanal", "Kendrapara", "Rayagada", "Koraput", "Jeypore", "Bargarh", "Sundargarh", "Phulbani", "Nabarangpur", "Kalahandi", "Malkangiri", "Nuapada", "Sonepur", "Paradeep"
+  ],
+  "Punjab": [
+    "Ludhiana", "Amritsar", "Jalandhar", "Patiala", "Bathinda", "Mohali", "Hoshiarpur", "Pathankot", "Batala", "Moga", "Abohar", "Khanna", "Phagwara", "Malerkotla", "Barnala", "Firozpur", "Kapurthala", "Faridkot", "Muktsar", "Sangrur", "Gurdaspur", "Ropar", "Fatehgarh Sahib"
+  ],
+  "Rajasthan": [
+    "Jaipur", "Jodhpur", "Udaipur", "Kota", "Ajmer", "Bikaner", "Alwar", "Bhilwara", "Sikar", "Pali", "Sri Ganganagar", "Hanumangarh", "Bharatpur", "Sawai Madhopur", "Chittorgarh", "Tonk", "Jhunjhunu", "Nagaur", "Barmer", "Banswara", "Dholpur", "Jaisalmer", "Churu", "Bundi", "Dausa", "Karauli", "Sirohi", "Pratapgarh", "Jhalawar"
+  ],
+  "Sikkim": [
+    "Gangtok", "Namchi", "Mangan", "Gyalshing", "Rangpo", "Singtam", "Jorethang"
+  ],
+  "Tamil Nadu": [
+    "Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", "Tirunelveli", "Tiruppur", "Vellore", "Erode", "Thoothukudi", "Dindigul", "Thanjavur", "Nagercoil", "Kanchipuram", "Karur", "Sivakasi", "Cuddalore", "Kumbakonam", "Tiruvannamalai", "Ambur", "Pudukkottai", "Nagapattinam", "Villupuram", "Namakkal", "Ramanathapuram", "Ariyalur", "Krishnagiri"
+  ],
+  "Telangana": [
+    "Hyderabad", "Warangal", "Nizamabad", "Karimnagar", "Khammam", "Ramagundam", "Mahbubnagar", "Adilabad", "Suryapet", "Miryalaguda", "Nalgonda", "Siddipet", "Medak", "Jagtial", "Kamareddy", "Mancherial", "Bodhan", "Zaheerabad"
+  ],
+  "Tripura": [
+    "Agartala", "Udaipur", "Dharmanagar", "Kailashahar", "Ambassa", "Belonia", "Khowai", "Sonamura"
+  ],
+  "Uttar Pradesh": [
+    "Lucknow", "Kanpur", "Varanasi", "Agra", "Meerut", "Allahabad", "Ghaziabad", "Noida", "Bareilly", "Aligarh", "Moradabad", "Saharanpur", "Gorakhpur", "Faizabad", "Firozabad", "Jhansi", "Muzaffarnagar", "Mathura", "Shahjahanpur", "Rampur", "Etawah", "Farrukhabad", "Sitapur", "Banda", "Raebareli", "Sultanpur", "Bijnor", "Ballia", "Jaunpur", "Basti", "Azamgarh", "Hardoi", "Unnao", "Hapur", "Amroha", "Bulandshahr", "Gonda", "Barabanki", "Mau", "Mainpuri", "Etah", "Deoria", "Chandauli", "Lakhimpur", "Bahraich", "Balrampur", "Ambedkar Nagar", "Sant Kabir Nagar", "Sambhal", "Kasganj", "Amethi", "Pratapgarh"
+  ],
+  "Uttarakhand": [
+    "Dehradun", "Haridwar", "Roorkee", "Haldwani", "Rudrapur", "Kashipur", "Rishikesh", "Nainital", "Pithoragarh", "Almora", "Tehri", "Pauri", "Chamoli", "Uttarkashi", "Bageshwar", "Champawat"
+  ],
+  "West Bengal": [
+    "Kolkata", "Howrah", "Durgapur", "Asansol", "Siliguri", "Bardhaman", "Malda", "Kharagpur", "Haldia", "Baharampur", "Jalpaiguri", "Balurghat", "Cooch Behar", "Krishnanagar", "Bankura", "Darjeeling", "Raiganj", "Medinipur", "Purulia", "Alipurduar", "Chinsurah", "Bongaon", "Serampore", "Kalyani"
+  ],
+  "Andaman and Nicobar Islands": [
+    "Port Blair", "Car Nicobar", "Havelock Island", "Mayabunder", "Diglipur", "Rangat"
+  ],
+  "Chandigarh": [
+    "Chandigarh"
+  ],
+  "Dadra and Nagar Haveli and Daman and Diu": [
+    "Daman", "Silvassa", "Diu", "Amli", "Kachigam"
+  ],
+  "Delhi": [
+    "New Delhi", "Dwarka", "Rohini", "Karol Bagh", "Saket", "Vasant Kunj", "Laxmi Nagar", "Janakpuri", "Pitampura", "Connaught Place", "Mayur Vihar", "Narela"
+  ],
+  "Jammu and Kashmir": [
+    "Srinagar", "Jammu", "Anantnag", "Baramulla", "Udhampur", "Kathua", "Sopore", "Rajouri", "Pulwama", "Poonch", "Kupwara", "Kulgam", "Doda", "Bandipora", "Budgam", "Ganderbal", "Shopian", "Reasi", "Kishtwar", "Samba"
+  ],
+  "Ladakh": [
+    "Leh", "Kargil", "Diskit", "Nubra", "Padum"
+  ],
+  "Lakshadweep": [
+    "Kavaratti", "Agatti", "Amini", "Andrott", "Kalpeni", "Kadmat", "Minicoy"
+  ],
+  "Puducherry": [
+    "Puducherry", "Karaikal", "Mahe", "Yanam"
+  ]
+};
+function updateCityDropdown() {
+  const stateSelect = document.getElementById('{{ form.state.id_for_label }}');
+  const citySelect = document.getElementById('{{ form.city.id_for_label }}');
+  const selectedState = stateSelect.value;
+  const selectedCity = "{{ form.instance.city|escapejs }}";
+  citySelect.innerHTML = '<option value="">---------</option>';
+  if (selectedState && cityMap[selectedState]) {
+    cityMap[selectedState].forEach(function(city) {
+      const option = document.createElement('option');
+      option.value = city;
+      option.textContent = city;
+      if (city === selectedCity) {
+        option.selected = true;
+      }
+      citySelect.appendChild(option);
+    });
+  }
+}
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('{{ form.state.id_for_label }}').addEventListener('change', updateCityDropdown);
+  updateCityDropdown();
+});
+
+// Course Data and Calculation
+const courseData = {
+  {% for course in courses %}
+    "{{ course.id }}": {
+      "fee": {{ course.course_fee }},
+      "duration": {{ course.course_duration }},
+      "duration_type": "{{ course.duration_type }}",
+      "name": "{{ course.course_name|escapejs }}"
+    },
+  {% endfor %}
+};
+function updateCourseFields() {
+  const courseField = document.getElementById('{{ form.course.id_for_label }}');
+  const durationField = document.getElementById('course_duration');
+  const feeField = document.getElementById('course_fee');
+  const discountField = document.getElementById('{{ form.discount.id_for_label }}');
+  const finalAmountField = document.getElementById('final_amount');
+  const paymentMethodField = document.getElementById('{{ form.payment_method.id_for_label }}');
+  const totalInstallmentsField = document.getElementById('{{ form.total_installments.id_for_label }}');
+  const installmentsDiv = document.getElementById('installmentsDiv');
+  const initialPaymentDiv = document.getElementById('initialPaymentDiv');
+  const amountDueField = document.getElementById('amount_due');
+  const amountRemainingField = document.getElementById('amount_remaining');
+  const initialPaymentField = document.getElementById('{{ form.initial_payment.id_for_label }}');
+  const errorDiv = document.getElementById('initialPaymentError');
+
+  let course = courseData[courseField.value];
+  let fee = course ? parseFloat(course.fee) : 0;
+  let duration = course ? parseInt(course.duration) : 1;
+  let durationType = course ? course.duration_type : '';
+  let discount = parseFloat(discountField.value) || 0;
+  let finalAmount = fee - discount;
+  if (finalAmount < 0) finalAmount = 0;
+  let initial = parseFloat(initialPaymentField.value) || 0;
+  let paymentMethod = paymentMethodField.value;
+  let totalInstallments = parseInt(totalInstallmentsField.value) || 1;
+  let amountDue = '';
+  let amountRemaining = '';
+
+  if (course) {
+    let label = durationType === "weeks" ? "Weeks" : "Months";
+    durationField.value = `${duration} ${label}`;
+    feeField.value = fee;
+  } else {
+    durationField.value = "";
+    feeField.value = "";
+  }
+
+  finalAmountField.value = finalAmount;
+
+  if (paymentMethod === 'installment') {
+    installmentsDiv.style.display = '';
+    initialPaymentDiv.style.display = '';
+    initialPaymentField.removeAttribute('readonly');
+    let perInstallment = totalInstallments > 0 ? Math.ceil(finalAmount / totalInstallments) : 0;
+    amountDue = perInstallment - initial;
+    if (amountDue < 0) amountDue = 0;
+    amountRemaining = finalAmount - initial;
+    if (amountRemaining < 0) amountRemaining = 0;
+  } else if (paymentMethod === 'monthly') {
+    installmentsDiv.style.display = 'none';
+    initialPaymentDiv.style.display = '';
+    initialPaymentField.removeAttribute('readonly');
+    let perMonth = duration > 0 ? Math.ceil(finalAmount / duration) : 0;
+    amountDue = perMonth - initial;
+    if (amountDue < 0) amountDue = 0;
+    amountRemaining = finalAmount - initial;
+    if (amountRemaining < 0) amountRemaining = 0;
+  } else if (paymentMethod === 'one_time') {
+    installmentsDiv.style.display = 'none';
+    initialPaymentDiv.style.display = '';
+    initialPaymentField.value = finalAmount;
+    initialPaymentField.setAttribute('readonly', 'readonly');
+    amountDue = 0;
+    amountRemaining = 0;
+  } else {
+    installmentsDiv.style.display = 'none';
+    initialPaymentDiv.style.display = 'none';
+    amountDue = '';
+    amountRemaining = '';
+    initialPaymentField.value = '';
+  }
+
+  amountDueField.value = amountDue;
+  amountRemainingField.value = amountRemaining;
+
+  if (paymentMethod !== 'one_time' && initial > finalAmount) {
+    errorDiv.textContent = "Initial payment cannot exceed final amount.";
+  } else {
+    errorDiv.textContent = "";
+  }
+}
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('{{ form.course.id_for_label }}').addEventListener('change', updateCourseFields);
+  document.getElementById('{{ form.discount.id_for_label }}').addEventListener('input', updateCourseFields);
+  document.getElementById('{{ form.payment_method.id_for_label }}').addEventListener('change', updateCourseFields);
+  document.getElementById('{{ form.total_installments.id_for_label }}').addEventListener('input', updateCourseFields);
+  document.getElementById('{{ form.initial_payment.id_for_label }}').addEventListener('input', updateCourseFields);
+  updateCourseFields();
+});
+
+// Webcam logic
+const openWebcamBtn = document.getElementById('openWebcamBtn');
+const webcamModal = document.getElementById('webcamModal');
+const webcamVideo = document.getElementById('webcamVideo');
+const captureBtn = document.getElementById('captureBtn');
+const webcamCanvas = document.getElementById('webcamCanvas');
+const photoPreview = document.getElementById('photoPreview');
+const closeWebcamBtn = document.getElementById('closeWebcamBtn');
+openWebcamBtn.addEventListener('click', async () => {
+  webcamModal.style.display = 'block';
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    webcamVideo.srcObject = stream;
+  } catch (err) {
+    alert("Webcam not accessible.");
+  }
+});
+captureBtn.addEventListener('click', () => {
+  webcamCanvas.width = webcamVideo.videoWidth;
+  webcamCanvas.height = webcamVideo.videoHeight;
+  const ctx = webcamCanvas.getContext('2d');
+  ctx.drawImage(webcamVideo, 0, 0, webcamCanvas.width, webcamCanvas.height);
+  const dataUrl = webcamCanvas.toDataURL('image/png');
+  photoPreview.src = dataUrl;
+  photoPreview.style.display = 'block';
+  webcamVideo.srcObject.getTracks().forEach(track => track.stop());
+  webcamModal.style.display = 'none';
+});
+closeWebcamBtn.addEventListener('click', () => {
+  if (webcamVideo.srcObject) {
+    webcamVideo.srcObject.getTracks().forEach(track => track.stop());
+  }
+  webcamModal.style.display = 'none';
+});
+</script>
+{% endblock %}

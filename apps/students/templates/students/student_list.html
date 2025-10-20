@@ -1,0 +1,278 @@
+{% extends 'm.html' %}
+{% load static %}
+{% block content %}
+
+<!-- FontAwesome for icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
+
+<style>
+  .toggle-btn { margin-bottom: 16px; }
+  .table th, .table td { vertical-align: middle; text-align: center; }
+  .side-panel {
+    position: fixed; top: 0; right: -100%;
+    width: 375px; height: 100%;
+    background: #fff; box-shadow: -3px 0 10px rgba(0,0,0,0.16);
+    transition: right 0.3s; z-index: 1055; overflow-y: auto;
+  }
+  .side-panel.open { right: 0; }
+  .side-panel-header {
+    background: #4b49ac; color: #fff; padding: 16px;
+    font-size: 1.4rem; text-align: center;
+  }
+  .side-panel-body { padding: 20px; }
+  .side-panel-footer {
+    padding: 12px 20px; border-top: 1px solid #eee; text-align: right;
+  }
+</style>
+
+<div class="container-xxl flex-grow-1 container-p-y">
+
+  <!-- Top Bar -->
+  <div class="row g-2 mb-3 align-items-center">
+    <div class="col-auto">
+      <a href="{% url 'student_create' %}" class="btn btn-dark" aria-label="Add Student">
+        <i class="fas fa-plus-circle"></i> Add Student
+      </a>
+    </div>
+    <div class="col-auto">
+      <form method="get" class="d-inline">
+        <label for="orderSelect" class="visually-hidden">Sort Order</label>
+        <select name="order" id="orderSelect" class="form-select d-inline w-auto" onchange="this.form.submit()">
+          <option value="desc" {% if order == 'desc' %}selected{% endif %}>Latest First</option>
+          <option value="asc" {% if order == 'asc' %}selected{% endif %}>Oldest First</option>
+        </select>
+      </form>
+    </div>
+    <div class="col-auto ms-auto">
+      <!-- Pending Dues Toggle Button -->
+      <button id="togglePendingDuesBtn" class="btn btn-outline-danger toggle-btn" type="button" aria-pressed="false" aria-controls="pendingDuesSection">
+        <i class="fas fa-exclamation-circle"></i> View Pending Dues
+      </button>
+    </div>
+  </div>
+
+  <!-- Pending Dues Table (Initially Hidden) -->
+  <section id="pendingDuesSection" style="display:none;" aria-hidden="true" tabindex="-1">
+    <h5 class="text-danger mb-2">
+      <i class="fas fa-exclamation-triangle"></i> Pending Dues
+    </h5>
+    <div class="table-responsive mb-4">
+      <table class="table table-bordered table-hover shadow-sm bg-light">
+        <thead class="table-dark">
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Student</th>
+            <th scope="col">Course</th>
+            <th scope="col">Email</th>
+            <th scope="col">Contact</th>
+            <th scope="col">Amount Remaining</th>
+            <th scope="col">Status</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in pending_dues %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>
+              <a href="{% url 'student_detail' e.student.student_id %}" class="fw-bold">{{ e.student.full_name }}</a>
+              <div class="text-muted small">{{ e.student.father_name }}</div>
+            </td>
+            <td>{{ e.course.course_name }}</td>
+            <td>{{ e.student.email }}</td>
+            <td>{{ e.student.contact }}</td>
+            <td><span class="badge bg-warning">₹{{ e.amount_remaining|floatformat:2 }}</span></td>
+            <td>
+              {% if e.payment_status == "due" %}
+                <span class="badge bg-danger">Due</span>
+              {% elif e.payment_status == "partial" %}
+                <span class="badge bg-info text-dark">Partial</span>
+              {% else %}
+                <span class="badge bg-success">Paid</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="btn-group" role="group" aria-label="Actions">
+                <button type="button" class="btn btn-sm btn-warning" title="Add Payment"
+                  onclick="openSidePanel('{{ e.pk }}', '{{ e.amount_paid }}', '{{ e.amount_due }}', '{{ e.amount_remaining }}')">
+                  <i class="fas fa-rupee-sign"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8" class="text-center text-muted">All dues cleared 🎉</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- All Enrollments Table -->
+  <h5 class="mb-2 text-secondary"><i class="fas fa-users"></i> All Enrollments</h5>
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover bg-white">
+      <thead class="table-secondary">
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Enrollment ID</th>
+          <th scope="col">Student</th>
+          <th scope="col">Course</th>
+          <th scope="col">Paid</th>
+          <th scope="col">Amount Remaining</th>
+          <th scope="col">Status</th>
+          <th scope="col">Enrolled</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in enrollments %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td><span class="text-primary">{{ e.t_id }}</span></td>
+          <td>
+            <a href="{% url 'student_detail' e.student.student_id %}" class="fw-bold text-primary">{{ e.student.full_name }}</a><br>
+            <small>{{ e.student.email }}</small>
+          </td>
+          <td>{{ e.course.course_name }}</td>
+          <td>₹{{ e.amount_paid|floatformat:2 }}</td>
+          <td>₹{{ e.amount_remaining|floatformat:2 }}</td>
+          <td>
+            {% if e.payment_status == "due" %}
+              <span class="badge bg-danger">Due</span>
+            {% elif e.payment_status == "partial" %}
+              <span class="badge bg-info">Partial</span>
+            {% else %}
+              <span class="badge bg-success">Paid</span>
+            {% endif %}
+          </td>
+          <td>{{ e.enrollment_date|date:"d-m-Y" }}</td>
+          <td>
+            <div class="btn-group" role="group" aria-label="Actions">
+              <a href="{% url 'enrollment_detail' e.pk %}" class="btn btn-sm btn-primary" title="View"><i class="fas fa-eye"></i></a>
+              <a href="{% url 'student_edit' e.pk %}" class="btn btn-sm btn-info" title="Edit"><i class="fas fa-edit"></i></a>
+              <a href="{% url 'enrollment_delete' e.pk %}" class="btn btn-sm btn-danger" title="Delete" onclick="return confirm('Delete this enrollment?')"><i class="fas fa-trash"></i></a>
+              <a href="{% url 'download_receipt' e.pk %}" target="_blank" class="btn btn-sm btn-success" title="Receipt"><i class="fas fa-file-invoice"></i></a>
+              <button type="button" class="btn btn-sm btn-warning" title="Add Payment"
+                onclick="openSidePanel('{{ e.pk }}', '{{ e.amount_paid }}', '{{ e.amount_due }}', '{{ e.amount_remaining }}')">
+                <i class="fas fa-rupee-sign"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="9" class="text-center text-muted">No enrollments yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+ 
+
+  <!-- Side Panel for Adding Payment -->
+  <aside id="sidePanel" class="side-panel" aria-hidden="true" aria-label="Add Payment Panel">
+    <div class="side-panel-header">Add Payment</div>
+    <div class="side-panel-body">
+      <form id="addFeeForm" method="post" action="">
+        {% csrf_token %}
+        <input type="hidden" name="enrollment_id" id="enrollmentId" />
+        <input type="hidden" id="originalDueAmount" />
+        <input type="hidden" id="originalRemainingAmount" />
+
+        <div class="mb-3">
+          <label for="previousAmount" class="form-label">Previously Paid:</label>
+          <input type="text" id="previousAmount" class="form-control" readonly>
+        </div>
+
+        <div class="mb-3">
+          <label for="newAmount" class="form-label">New Payment:</label>
+          <input type="number" name="amount" id="newAmount" class="form-control" required min="0" step="0.01" />
+        </div>
+
+        <div class="mb-3">
+          <label for="payment_date" class="form-label">Payment Date:</label>
+          <input type="date" name="payment_date" id="payment_date" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="payment_mode" class="form-label">Payment Mode:</label>
+          <select name="payment_mode" id="payment_mode" class="form-select" required>
+            <option value="cash">Cash</option>
+            <option value="card">Card</option>
+            <option value="upi">UPI</option>
+            <option value="bank_transfer">Bank Transfer</option>
+            <option value="online">Online</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="remainingAmount" class="form-label">Remain After Payment:</label>
+          <input type="text" id="remainingAmount" class="form-control" readonly>
+        </div>
+
+        <div class="side-panel-footer">
+          <button type="button" class="btn btn-link" onclick="closeSidePanel()">Cancel</button>
+          <button type="submit" class="btn btn-dark">Save Payment</button>
+        </div>
+      </form>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+  // Pending Dues Toggle button
+  document.getElementById('togglePendingDuesBtn').addEventListener('click', function () {
+    const pendingDiv = document.getElementById('pendingDuesSection');
+    const isHidden = pendingDiv.style.display === 'none';
+    pendingDiv.style.display = isHidden ? '' : 'none';
+    this.innerHTML = isHidden
+      ? '<i class="fas fa-exclamation-circle"></i> Hide Pending Dues'
+      : '<i class="fas fa-exclamation-circle"></i> View Pending Dues';
+    this.classList.toggle('btn-danger', isHidden);
+    this.classList.toggle('btn-outline-danger', !isHidden);
+    this.setAttribute('aria-pressed', isHidden);
+  });
+
+  // Format number as currency string (Indian Rupee)
+  function formatCurrency(n) {
+    return `₹${parseFloat(n || 0).toFixed(2)}`;
+  }
+
+  // Show side panel for adding payment with pre-filled data
+  function openSidePanel(id, paid, due, remaining) {
+    document.getElementById('enrollmentId').value = id;
+    document.getElementById('previousAmount').value = formatCurrency(paid);
+    document.getElementById('newAmount').value = '';
+    document.getElementById('remainingAmount').value = formatCurrency(remaining);
+    document.getElementById('originalDueAmount').value = due;
+    document.getElementById('originalRemainingAmount').value = remaining;
+    document.getElementById('addFeeForm').action = `/students/${id}/add-payment/`;
+    document.getElementById('payment_date').value = new Date().toISOString().split('T')[0];  // today
+    document.getElementById('sidePanel').classList.add('open');
+    document.getElementById('sidePanel').setAttribute('aria-hidden', 'false');
+  }
+
+  // Close side panel
+  function closeSidePanel() {
+    document.getElementById('sidePanel').classList.remove('open');
+    document.getElementById('sidePanel').setAttribute('aria-hidden', 'true');
+  }
+
+  // Dynamically update remaining amount when new payment amount changes
+  document.addEventListener('DOMContentLoaded', function () {
+    const newAmount = document.getElementById('newAmount');
+    if (!newAmount) return;
+
+    newAmount.addEventListener('input', function () {
+      const newAmt = parseFloat(this.value) || 0;
+      const origRemain = parseFloat(document.getElementById('originalRemainingAmount').value) || 0;
+      const balance = Math.max(origRemain - newAmt, 0);
+      document.getElementById('remainingAmount').value = formatCurrency(balance);
+    });
+  });
+</script>
+
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'm.html' %}
+{% block content %}
+<div class="content-wrapper">
+  <div class="container-xxl flex-grow-1 container-p-y">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card shadow-sm rounded">
+          <div class="card-header bg-danger text-white">
+            <h4 class="mb-0"><i class="fas fa-trash-alt"></i> Delete Team Member</h4>
+          </div>
+          <div class="card-body text-center">
+            <p class="lead mb-4">
+              Are you sure you want to delete <strong>{{ team.name }}</strong>
+              (<span class="text-monospace">{{ team.employee_code }}</span>)?
+            </p>
+            <form method="post">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger me-2">
+                <i class="fas fa-trash-alt"></i> Delete
+              </button>
+              <a href="{% url 'team_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Cancel
+              </a>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+{% endblock %}

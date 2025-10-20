@@ -1,0 +1,61 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login | My App</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: #f3f6fa; font-family: 'Segoe UI', sans-serif; }
+        .login-container {
+            max-width: 400px; margin: 60px auto;
+            background: #fff; border-radius: 16px;
+            box-shadow: 0 6px 24px 0 rgba(44,62,80,0.13);
+            padding: 32px 30px 24px 30px;
+        }
+        .login-title { text-align: center; font-size: 2rem; font-weight: 700; color: #696CFF; margin-bottom: 28px; }
+        .form-group { margin-bottom: 18px; }
+        .form-label { display: block; margin-bottom: 6px; color: #333; font-weight: 500; }
+        .form-control {
+            width: 100%; padding: 10px 12px; border: 1px solid #d1d5db;
+            border-radius: 8px; font-size: 1rem; outline: none;
+            transition: border 0.2s;
+        }
+        .form-control:focus { border-color: #696CFF; }
+        .btn-login {
+            width: 100%; background: #696CFF; color: #fff;
+            border: none; padding: 12px 0; border-radius: 8px;
+            font-size: 1.08rem; font-weight: 600; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-login:hover { background: #4e51c9; }
+        .login-footer { text-align: center; margin-top: 24px; color: #888; font-size: 0.98em; }
+        .alert { background: #ffe5e5; color: #c00; border-radius: 6px; padding: 10px 12px; margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-title"><i class="fas fa-user-circle"></i> Login</div>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        <form method="post" autocomplete="off">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label" for="username">Username</label>
+                <input type="text" name="username" id="username" class="form-control" required autofocus>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="password">Password</label>
+                <input type="password" name="password" id="password" class="form-control" required>
+            </div>
+            <button type="submit" class="btn-login">Login</button>
+        </form>
+        <div class="login-footer">
+            &copy; {{ now|date:"Y" }} My App. All rights reserved.
+        </div>
+    </div>
+</body>
+</html>

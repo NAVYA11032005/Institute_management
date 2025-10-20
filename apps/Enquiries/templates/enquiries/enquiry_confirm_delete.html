@@ -1,0 +1,57 @@
+{% extends 'm.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper">
+  <div class="container-xxl flex-grow-1 container-p-y">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card shadow-sm rounded mt-5">
+          <div class="card-header bg-danger text-white text-center">
+            <h4>Confirm Delete Enquiry</h4>
+          </div>
+          <div class="card-body text-center">
+            <p class="fs-5 mb-4">
+              Are you sure you want to <span class="fw-bold text-danger">delete</span> this enquiry?
+            </p>
+            <table class="table table-bordered">
+              <tr>
+                <th>Name</th>
+                <td>{{ enquiry.name }}</td>
+              </tr>
+              <tr>
+                <th>Email</th>
+                <td>{{ enquiry.email }}</td>
+              </tr>
+              <tr>
+                <th>Phone</th>
+                <td>{{ enquiry.phone }}</td>
+              </tr>
+              <tr>
+                <th>Course</th>
+                <td>{{ enquiry.course.course_name }}</td>
+              </tr>
+              <tr>
+                <th>City</th>
+                <td>{{ enquiry.city }}</td>
+              </tr>
+              <tr>
+                <th>Date</th>
+                <td>{{ enquiry.created_at|date:"d-m-Y" }}</td>
+              </tr>
+            </table>
+            <form method="post" class="mt-4">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger px-4">Yes, Delete</button>
+              <a href="{% url 'enquiry_list' %}" class="btn btn-secondary px-4 ms-2">Cancel</a>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+<style>
+.table th, .table td { text-align: center; vertical-align: middle; }
+.card-header { font-size: 1.25rem; }
+</style>
+{% endblock %}

@@ -1,0 +1,151 @@
+{% extends 'm.html' %}
+{% load static %}
+{% block content %}
+
+
+
+<style>
+  .dashboard-search-bar {
+    max-width: 900px;
+    margin: 2rem auto 1.5rem auto;
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border-radius: 2rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    padding: 0.5rem 1rem;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .dashboard-search-bar input,
+  .dashboard-search-bar select {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 1.1rem;
+    padding-left: 0.7rem;
+    margin-right: 0.5rem;
+  }
+  .dashboard-search-bar select {
+    min-width: 120px;
+    background: #f8f9fa;
+    border-radius: 1rem;
+    padding: 0.3rem 1rem;
+  }
+  .dashboard-search-bar button,
+  .dashboard-search-bar a {
+    border: none;
+    background: none;
+    color: #555;
+    font-size: 1.2rem;
+    margin-left: 0.5rem;
+    cursor: pointer;
+  }
+  .dashboard-summary-cards .card {
+    border-radius: 1rem;
+    transition: transform 0.15s;
+  }
+  .dashboard-summary-cards .card:hover {
+    transform: translateY(-5px) scale(1.03);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+  }
+  .dashboard-summary-cards .icon {
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+</style>
+
+
+<div class="content-wrapper">
+    <div class="container-xxl flex-grow-1 container-p-y">
+
+  <!-- Month Filter Bar -->
+  <form method="get" action="{% url 'expense_summary' %}" class="dashboard-search-bar">
+    <input 
+      type="month" 
+      name="month" 
+      value="{{ selected_month|default:'' }}" 
+      class="form-control" 
+      style="flex:1; min-width:160px;"
+    >
+    <button type="submit" class="btn btn-primary">Apply</button>
+    {% if selected_month %}
+      <a href="{% url 'expense_summary' %}" class="btn btn-secondary" style="white-space:nowrap;">Clear</a>
+    {% endif %}
+  </form>
+
+  <!-- Dashboard Cards -->
+  <div class="row dashboard-summary-cards mb-4 text-center">
+    <div class="col-md-4 mb-3">
+      <div class="card shadow-sm bg-danger text-white">
+        <div class="card-body">
+          <span class="icon"><i class="fas fa-receipt"></i></span>
+          <h5>Total Expenses</h5>
+          <p class="fs-4 mb-0">₹{{ total_expenses|floatformat:2 }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card shadow-sm bg-success text-white">
+        <div class="card-body">
+          <span class="icon"><i class="fas fa-wallet"></i></span>
+          <h5>Total Payments</h5>
+          <p class="fs-4 mb-0">₹{{ total_payment_collected|floatformat:2 }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card shadow-sm bg-dark text-white">
+        <div class="card-body">
+          <span class="icon"><i class="fas fa-balance-scale"></i></span>
+          <h5>Net Total</h5>
+          <p class="fs-4 mb-0">
+            ₹{% if net_total > 0 %}{{ net_total|floatformat:2 }}{% else %}0.00{% endif %}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Expenses Table -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-danger text-white text-center">
+      <h4 class="mb-0">Recent Expenses{% if selected_month %} ({{ selected_month }}){% endif %}</h4>
+    </div>
+    <div class="table-responsive">
+      <table class="table dashboard-table table-bordered mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Date</th>
+            <th>Expense Name</th>
+            <th>Expense By</th>
+            <th>Amount</th>
+            <th>Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for expense in recent_expenses %}
+          <tr>
+            <td>{{ expense.date|date:"d-m-Y" }}</td>
+            <td>{{ expense.expense_name }}</td>
+            <td>{{ expense.expense_by.name }}</td>
+            <td>₹{{ expense.amount|floatformat:2 }}</td>
+            <td>{{ expense.remarks }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-center text-danger py-4">
+              <i class="fas fa-exclamation-circle fa-2x mb-2"></i><br>
+              No expenses recorded for this month.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+ 
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+
+{% endblock %}

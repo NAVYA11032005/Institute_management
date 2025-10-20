@@ -1,0 +1,163 @@
+{% extends 'm.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+
+  <!-- Student Info Card -->
+  <div class="row justify-content-center mb-4">
+    <div class="col-md-7">
+      <div class="card shadow-sm border-primary mb-4">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0"><i class="fas fa-user-graduate me-2"></i> Student Details</h4>
+        </div>
+        <div class="card-body">
+          <div class="row mb-2">
+            <div class="col-6"><strong>Student ID:</strong></div>
+            <div class="col-6">{{ student.student_id|default:"-" }}</div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-6"><strong>Full Name:</strong></div>
+            <div class="col-6">{{ student.full_name }}</div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-6"><strong>Email:</strong></div>
+            <div class="col-6">{{ student.email }}</div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-6"><strong>Contact:</strong></div>
+            <div class="col-6">{{ student.contact }}</div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-6"><strong>Emergency Contact:</strong></div>
+            <div class="col-6">{{ student.emergency_contact_number|default:"-" }}</div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-6"><strong>Address:</strong></div>
+            <div class="col-6">{{ student.address|default:"-" }}</div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-6"><strong>City:</strong></div>
+            <div class="col-6">{{ student.city }}</div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-6"><strong>State:</strong></div>
+            <div class="col-6">{{ student.state }}</div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-6"><strong>Pincode:</strong></div>
+            <div class="col-6">{{ student.pincode }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enrollment Cards -->
+  <div class="row justify-content-center">
+    <div class="col-md-10">
+      <h4 class="mb-3 text-primary">Enrollments</h4>
+      {% if enrollments %}
+        <div class="row g-4">
+          {% for enrollment in enrollments %}
+          <div class="col-md-6">
+            <div class="card border-2 shadow-sm 
+              {% if enrollment.status == 'active' %}
+                border-success
+              {% elif enrollment.status == 'completed' %}
+                border-info
+              {% else %}
+                border-secondary
+              {% endif %}">
+              <div class="card-header 
+                {% if enrollment.status == 'active' %}
+                  bg-success
+                {% elif enrollment.status == 'completed' %}
+                  bg-info
+                {% else %}
+                  bg-secondary
+                {% endif %} text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                  <span><i class="fas fa-book-open me-2"></i> {{ enrollment.course.course_name }}</span>
+                  <span class="badge bg-light text-dark">Enroll ID: {{ enrollment.t_id }}</span>
+                </div>
+              </div>
+              <div class="card-body small">
+                <div class="row mb-1">
+                  <div class="col-6"><strong>Status:</strong></div>
+                  <div class="col-6">{{ enrollment.get_status_display }}</div>
+                </div>
+                <div class="row mb-1">
+                  <div class="col-6"><strong>Enrollment Date:</strong></div>
+                  <div class="col-6">{{ enrollment.enrollment_date|date:"d-m-Y" }}</div>
+                </div>
+                <div class="row mb-1">
+                  <div class="col-6"><strong>Due Date:</strong></div>
+                  <div class="col-6">{% if enrollment.due_date %}{{ enrollment.due_date|date:"d-m-Y" }}{% else %}-{% endif %}</div>
+                </div>
+                <div class="row mb-1">
+                  <div class="col-6"><strong>Batch Time:</strong></div>
+                  <div class="col-6">{% if enrollment.batch_time %}{{ enrollment.batch_time|time:"h:i A" }}{% else %}-{% endif %}</div>
+                </div>
+                <div class="row mb-1">
+                  <div class="col-6"><strong>Final Amount:</strong></div>
+                  <div class="col-6">₹{{ enrollment.final_amount }}</div>
+                </div>
+                <div class="row mb-1">
+                  <div class="col-6"><strong>Paid:</strong></div>
+                  <div class="col-6">₹{{ enrollment.amount_paid }}</div>
+                </div>
+                <div class="row mb-1">
+                  <div class="col-6"><strong>Due:</strong></div>
+                  <div class="col-6">₹{{ enrollment.amount_due }}</div>
+                </div>
+                <div class="row mb-1">
+                  <div class="col-6"><strong>Remaining:</strong></div>
+                  <div class="col-6 text-danger fw-bold">₹{{ enrollment.amount_remaining }}</div>
+                </div>
+                <div class="row mb-1">
+                  <div class="col-6"><strong>Payment Method:</strong></div>
+                  <div class="col-6">{{ enrollment.get_payment_method_display }}</div>
+                </div>
+                <div class="row mb-1">
+                  <div class="col-6"><strong>Payment Mode:</strong></div>
+                  <div class="col-6">{{ enrollment.get_payment_mode_display }}</div>
+                </div>
+                <div class="row mb-1">
+                  <div class="col-6"><strong>Referral Source:</strong></div>
+                  <div class="col-6">{{ enrollment.get_referral_source_display|default:"-" }}</div>
+                </div>
+                <div class="row mb-1">
+                  <div class="col-6"><strong>Referred By:</strong></div>
+                  <div class="col-6">{{ enrollment.referred_by_name|default:"-" }}</div>
+                </div>
+                <div class="row mb-1">
+                  <div class="col-6"><strong>Notes:</strong></div>
+                  <div class="col-6">{{ enrollment.notes|default:"-" }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="alert alert-info mt-3 text-center">No enrollments found for this student.</div>
+      {% endif %}
+
+      <!-- Back Button -->
+      <div class="text-center mt-4">
+        <a href="{% url 'student_list' %}" class="btn btn-secondary">
+          <i class="fas fa-arrow-circle-left me-1"></i> Back to Student List
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+
+
+<!-- Optional styling -->
+<style>
+.card-header h4 { font-size: 1.2rem; margin-bottom: 0; }
+</style>
+{% endblock %}

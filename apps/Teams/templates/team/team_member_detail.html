@@ -1,0 +1,112 @@
+{% extends "m.html" %}
+{% load static %}
+
+{% block content %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+<style>
+    .student-profile-container { max-width: 900px; margin: 40px auto; background: #fff; border-radius: 18px; box-shadow: 0 6px 24px 0 rgba(44,62,80,0.13); padding: 0; overflow: hidden; }
+    .profile-banner { background: linear-gradient(90deg,#f5f7fa 60%,#e9ecef 100%); padding: 36px 0 22px 0; text-align: center; position: relative; }
+    .profile-photo-lg { width: 130px; height: 130px; object-fit: cover; border-radius: 50%; border: 4px solid #e3e7ed; background: #f8fafc; margin-bottom: 10px; }
+    .profile-main-name { font-size: 2.2rem; font-weight: 700; margin-bottom: 6px; }
+    .profile-course-batch { color: #0d6efd; font-size: 1.15em; margin-bottom: 8px; }
+    .enrollment-id-badge { display: inline-block; background: #0d6efd; color: #fff; font-size: 1.05em; font-weight: 600; border-radius: 8px; padding: 6px 18px; margin-bottom: 8px; letter-spacing: 1px; }
+    .profile-section { padding: 30px 48px 0 48px; }
+    .profile-section-title { font-weight: 700; font-size: 1.15rem; margin-bottom: 16px; color: #222; border-left: 4px solid #0d6efd; padding-left: 12px; }
+    .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px 38px; margin-bottom: 22px; }
+    .profile-item { display: flex; align-items: center; font-size: 1.06em; }
+    .profile-item i { color: #0d6efd; font-size: 1.3em; margin-right: 12px; min-width: 24px; text-align: center; }
+    .profile-label { color: #888; font-size: 0.98em; min-width: 110px; margin-right: 8px; }
+    .profile-value { font-weight: 500; color: #222; }
+    .profile-footer { text-align: center; color: #777; font-size: 15px; padding: 18px 0 8px 0; border-top: 1px solid #e3e7ed; margin-top: 32px; background: #f9fbfc; }
+    .profile-payments-section { background: #f6f7fb; padding: 24px 48px 24px 48px; border-top: 1px solid #ececec; }
+    .profile-payments-title { color: #696CFF; font-weight: 600; margin-bottom: 12px; font-size: 1.18rem; }
+    .payments-table { width: 100%; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(80,80,180,0.04); }
+    .payments-table th, .payments-table td { padding: 10px 12px; text-align: left; }
+    .payments-table th { background: #e9ecef; color: #222; font-weight: 600; }
+    .payments-table tr:not(:last-child) { border-bottom: 1px solid #ececec; }
+    .payment-amount { color: #28a745; font-weight: 600; }
+    @media (max-width: 900px) {
+        .student-profile-container { max-width: 99vw; }
+        .profile-section, .profile-payments-section { padding: 18px 10px 0 10px; }
+        .profile-footer { padding: 12px 0 6px 0; }
+        .profile-grid { grid-template-columns: 1fr; gap: 16px 0; }
+        .payments-table th, .payments-table td { padding: 8px 6px; font-size: 0.98em; }
+    }
+</style>
+
+<div class="student-profile-container">
+
+    <!-- Profile Banner -->
+    <div class="profile-banner">
+        {% if team_member.image %}
+            <img src="{{ team_member.image.url }}" alt="Team Member Photo" class="profile-photo-lg">
+        {% else %}
+            <img src="{% static 'default_profile.png' %}" alt="No Photo" class="profile-photo-lg">
+        {% endif %}
+        <div class="profile-main-name">{{ team_member.name }}</div>
+        <div class="profile-course-batch">{{ team_member.designation }}</div>
+        <div>
+            <span class="enrollment-id-badge">
+                {{ team_member.employee_code }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Details Section -->
+    <div class="profile-section">
+        <div class="profile-section-title">Contact & Location</div>
+        <div class="profile-grid">
+            <div class="profile-item">
+                <i class="fas fa-phone"></i>
+                <span class="profile-label">Phone:</span>
+                <span class="profile-value">{{ team_member.phone }}</span>
+            </div>
+            <div class="profile-item">
+                <i class="fas fa-envelope"></i>
+                <span class="profile-label">Email:</span>
+                <span class="profile-value">{{ team_member.email }}</span>
+            </div>
+            <div class="profile-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <span class="profile-label">Location:</span>
+                <span class="profile-value">{{ team_member.city }}, {{ team_member.state }} - {{ team_member.pincode }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payments Section -->
+    {% comment %} <div class="profile-payments-section">
+        <div class="profile-payments-title">
+            <i class="fas fa-rupee-sign"></i> Payments Made
+        </div>
+        {% if payments %}
+            <div style="overflow-x:auto;">
+                <table class="payments-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Payment For</th>
+                            <th>Remarks</th>
+                            <th>Payment Made</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr>
+                            <td>{{ payment.date|date:"d M Y" }}</td>
+                            <td>{{ payment.expense_name }}</td>
+                            <td>{{ payment.remarks|default:"-" }}</td>
+                            <td class="payment-amount">₹{{ payment.amount }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-muted">No payments made yet.</div>
+        {% endif %}
+    </div> {% endcomment %}
+
+
+
+{% endblock %}

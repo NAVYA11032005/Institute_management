@@ -1,0 +1,95 @@
+{% extends 'm.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper">
+  <div class="container-xxl flex-grow-1 container-p-y">
+
+    <div class="row justify-content-center">
+      <div class="col-md-7">
+        <div class="card shadow-sm rounded mt-4">
+          <div class="card-header bg-primary text-white text-center">
+            <h4>Enquiry Details</h4>
+          </div>
+          <div class="card-body">
+            <div class="row mb-2">
+              <div class="col-6"><strong>Name:</strong></div>
+              <div class="col-6">{{ enquiry.name }}</div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-6"><strong>Email:</strong></div>
+              <div class="col-6">{{ enquiry.email }}</div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-6"><strong>Phone:</strong></div>
+              <div class="col-6">{{ enquiry.phone }}</div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-6"><strong>Address:</strong></div>
+              <div class="col-6">{{ enquiry.address|default:"-" }}</div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-6"><strong>City:</strong></div>
+              <div class="col-6">{{ enquiry.city }}</div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-6"><strong>State:</strong></div>
+              <div class="col-6">{{ enquiry.state }}</div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-6"><strong>Pincode:</strong></div>
+              <div class="col-6">{{ enquiry.pincode|default:"-" }}</div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-6"><strong>Course Interested:</strong></div>
+              <div class="col-6">{{ enquiry.course.course_name }}</div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-6"><strong>Referral Source:</strong></div>
+              <div class="col-6">{{ enquiry.get_referral_source_display }}</div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-6"><strong>Referred By:</strong></div>
+              <div class="col-6">
+                {% if enquiry.reference_registration_number %}
+                  Student ID: {{ enquiry.reference_registration_number }}
+                {% elif enquiry.reference_name %}
+                  {{ enquiry.reference_name }}
+                {% else %}
+                  -
+                {% endif %}
+              </div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-6"><strong>Message:</strong></div>
+              <div class="col-6">{{ enquiry.message|default:"-" }}</div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-6"><strong>Date:</strong></div>
+              <div class="col-6">{{ enquiry.created_at|date:"d-m-Y H:i" }}</div>
+            </div>
+
+            {% if referenced_student %}
+            <div class="alert alert-info mt-4">
+              <strong>Referenced Student Details:</strong><br>
+              Name: {{ referenced_student.full_name }}<br>
+              Student ID: {{ referenced_student.student_id }}<br>
+              Email: {{ referenced_student.email }}<br>
+              Contact: {{ referenced_student.contact }}<br>
+              State: {{ referenced_student.state }}<br>
+              City: {{ referenced_student.city }}<br>
+            </div>
+            {% endif %}
+
+            <div class="text-center mt-4">
+              <a href="{% url 'enquiry_edit' enquiry.pk %}" class="btn btn-info me-2">Edit</a>
+              <a href="{% url 'enquiry_list' %}" class="btn btn-secondary">Back to List</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+{% endblock %}

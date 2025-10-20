@@ -1,0 +1,35 @@
+{% extends 'm.html' %}
+{% block content %}
+<div class="container col-sm-6 mt-4">
+  <div class="card">
+    <div class="card-header bg-primary text-white">
+      Add Expense
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        <div class="mb-3">
+          <label for="{{ form.expense_name.id_for_label }}">Expense Name</label>
+          {{ form.expense_name }}
+        </div>
+        <div class="mb-3">
+          <label for="{{ form.expense_by.id_for_label }}">Expense By</label>
+          {{ form.expense_by }}
+        </div>
+        <div class="mb-3">
+          <label for="{{ form.amount.id_for_label }}">Amount</label>
+          {{ form.amount }}
+        </div>
+        <div class="mb-3">
+          <label for="{{ form.remarks.id_for_label }}">Remarks</label>
+          {{ form.remarks }}
+        </div>
+        <button type="submit" class="btn btn-success">Add Expense</button>
+        <a href="{% url 'expense_list' %}" class="btn btn-secondary">Back</a>
+      </form>
+    </div>
+  </div>
+  <br><br>
+
+{% endblock %}

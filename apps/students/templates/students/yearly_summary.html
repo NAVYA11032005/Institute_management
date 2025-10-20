@@ -1,0 +1,184 @@
+{% extends 'm.html' %}
+{% load static %}
+{% block content %}
+
+
+
+<style>
+  .dashboard-summary-cards .card {
+    border-radius: 1rem;
+    transition: transform 0.15s;
+  }
+  .dashboard-summary-cards .card:hover {
+    transform: translateY(-5px) scale(1.03);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+  }
+  .dashboard-summary-cards .icon {
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+  .dashboard-search-bar {
+    max-width: 400px;
+    margin: 2rem auto 1.5rem auto;
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border-radius: 2rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    padding: 0.5rem 1rem;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .dashboard-search-bar select {
+    min-width: 120px;
+    background: #f8f9fa;
+    border-radius: 1rem;
+    padding: 0.3rem 1rem;
+    border: none;
+    outline: none;
+    font-size: 1.1rem;
+  }
+  .dashboard-search-bar button {
+    border: none;
+    background: #0d6efd;
+    color: #fff;
+    font-size: 1.1rem;
+    padding: 0.3rem 1.5rem;
+    border-radius: 1rem;
+    cursor: pointer;
+  }
+    .input-group.rounded-pill {
+    border-radius: 2rem !important;
+    overflow: hidden;
+    background: #fff;
+  }
+  .input-group .form-select {
+    border-radius: 2rem !important;
+    box-shadow: none;
+  }
+  .input-group .btn {
+    border-radius: 2rem !important;
+  }
+</style>
+
+
+<div class="content-wrapper">
+    <div class="container-xxl flex-grow-1 container-p-y">
+
+  <!-- Year Selector -->
+ <!-- Year Selector Search Bar -->
+<div class="row justify-content-center mb-4">
+  <div class="col-md-6 col-lg-4">
+    <form method="get" action="{% url 'yearly_summary' %}" class="input-group shadow rounded-pill bg-white p-2">
+      <select name="year" class="form-select border-0 bg-light rounded-pill me-2" style="max-width: 180px;">
+        {% for y in year_range %}
+          <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn btn-primary rounded-pill px-4">Go</button>
+    </form>
+  </div>
+</div>
+
+
+  <!-- Yearly Summary Cards -->
+  <div class="row dashboard-summary-cards mb-4 text-center">
+    <div class="col-md-4 mb-3">
+      <div class="card shadow-sm bg-success text-white">
+        <div class="card-body">
+          <span class="icon"><i class="fas fa-wallet"></i></span>
+          <h5>Yearly Collected</h5>
+          <p class="fs-4 mb-0">₹{{ yearly_payments|floatformat:2 }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card shadow-sm bg-danger text-white">
+        <div class="card-body">
+          <span class="icon"><i class="fas fa-receipt"></i></span>
+          <h5>Yearly Expenses</h5>
+          <p class="fs-4 mb-0">₹{{ yearly_expenses|floatformat:2 }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card shadow-sm bg-dark text-white">
+        <div class="card-body">
+          <span class="icon"><i class="fas fa-balance-scale"></i></span>
+          <h5>Net Total</h5>
+          <p class="fs-4 mb-0">
+            ₹{% if yearly_net > 0 %}{{ yearly_net|floatformat:2 }}{% else %}0.00{% endif %}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Yearly Payments Table -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white text-center">
+      <h4 class="mb-0">Payments by Month ({{ year }})</h4>
+    </div>
+    <div class="table-responsive">
+      <table class="table dashboard-table table-bordered mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Month</th>
+            <th>Total Payments</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in payments_by_month %}
+          <tr>
+            <td>{{ row.month|date:"F Y" }}</td>
+            <td>₹{{ row.total|floatformat:2 }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="2" class="text-center text-danger py-4">
+              <i class="fas fa-exclamation-circle fa-2x mb-2"></i><br>
+              No payment records found for this year.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Yearly Expenses Table -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-danger text-white text-center">
+      <h4 class="mb-0">Expenses by Month ({{ year }})</h4>
+    </div>
+    <div class="table-responsive">
+      <table class="table dashboard-table table-bordered mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Month</th>
+            <th>Total Expenses</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in expenses_by_month %}
+          <tr>
+            <td>{{ row.month|date:"F Y" }}</td>
+            <td>₹{{ row.total|floatformat:2 }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="2" class="text-center text-danger py-4">
+              <i class="fas fa-exclamation-circle fa-2x mb-2"></i><br>
+              No expense records found for this year.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+
+{% endblock %}

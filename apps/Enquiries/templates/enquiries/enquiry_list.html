@@ -1,0 +1,98 @@
+{% extends 'm.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Font Awesome CDN (Best placed in <head> of m.html/base template) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<div class="content-wrapper">
+  <div class="container-xxl flex-grow-1 container-p-y">
+    <div class="row justify-content-end mb-3">
+      <div class="col-md-auto">
+        <a href="{% url 'enquiry_create' %}" class="btn btn-primary">Add Enquiry</a>
+      </div>
+    </div>
+    <div class="card shadow-sm rounded">
+      <h2 class="card-header bg-primary text-white text-center">All Enquiries</h2>
+      <div class="card-body">
+        <br>
+        <form method="get" class="mb-4">
+          <div class="input-group">
+            <input
+              type="text"
+              name="q"
+              class="form-control"
+              placeholder="Search by name, email, phone, city, course..."
+              value="{{ search_query }}"
+            >
+            <button class="btn btn-info" type="submit">Search</button>
+          </div>
+        </form>
+        <div class="table-responsive">
+          <table class="table table-bordered table-striped align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Course</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>City</th>
+                <th>State</th>
+                <th>Referral</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for enquiry in enquiries %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>
+                  <a href="{% url 'enquiry_detail' enquiry.pk %}" class="fw-bold">{{ enquiry.name }}</a>
+                </td>
+                <td>{{ enquiry.course.course_name }}</td>
+                <td>{{ enquiry.phone }}</td>
+                <td>{{ enquiry.email }}</td>
+                <td>{{ enquiry.city }}</td>
+                <td>{{ enquiry.state }}</td>
+                <td>
+                  {% if enquiry.reference_registration_number %}
+                    Reg: {{ enquiry.reference_registration_number }}
+                  {% elif enquiry.reference_name %}
+                    {{ enquiry.reference_name }}
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+                <td>{{ enquiry.created_at|date:"d-m-Y" }}</td>
+                <td>
+                  <a href="{% url 'enquiry_detail' enquiry.pk %}" class="btn btn-sm btn-primary" title="View">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <a href="{% url 'enquiry_edit' enquiry.pk %}" class="btn btn-sm btn-info" title="Edit">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <a href="{% url 'enquiry_delete' enquiry.pk %}" class="btn btn-sm btn-danger" title="Delete" onclick="return confirm('Delete this enquiry?');">
+                    <i class="fas fa-trash"></i>
+                  </a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="10" class="text-center">No enquiries found.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+<style>
+  .table th, .table td { text-align: center; vertical-align: middle; }
+  .card-header { font-size: 1.25rem; }
+  .fw-bold { font-weight: 600; }
+</style>
+{% endblock %}

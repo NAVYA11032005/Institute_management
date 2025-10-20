@@ -1,0 +1,89 @@
+{% extends 'm.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+  <div class="row mb-4">
+    <div class="col-md-10 mx-auto">
+
+      <div class="card shadow-sm rounded mb-4">
+        <h4 class="card-header bg-primary text-white">
+          Payment Receipt / Statement for {{ student.full_name }} (Reg. No: {{ student.registration_number }})
+        </h4>
+        <div class="card-body">
+          {% for enrollment in enrollments %}
+          <div class="mb-4">
+            <h5>
+              Enrollment No: {{ enrollment.pk }} | Course: {{ enrollment.course.course_name }}
+            </h5>
+            <table class="table table-bordered">
+              <thead class="table-light">
+                <tr>
+                  <th>Payment Sequence</th>
+                  <th>Payment Date</th>
+                  <th>Amount Paid</th>
+                  <th>Payment Mode</th>
+                  <th>Status</th>
+                  <th>Cumulative Paid</th>
+                  <th>Due</th>
+                  <th>Remaining</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% with 0 as cumulative %}
+                {% for payment in enrollment.payments.all %}
+                <tr>
+                  <td>Payment #{{ forloop.counter }}</td>
+                  <td>{{ payment.payment_date|date:"d-m-Y" }}</td>
+                  <td>₹{{ payment.amount_paid|floatformat:2 }}</td>
+                  <td>{{ payment.get_payment_mode_display }}</td>
+                  <td>
+                    {% if payment.payment_status == "paid" %}
+                      <span class="badge bg-success">Paid</span>
+                    {% elif payment.payment_status == "partial" %}
+                      <span class="badge bg-info text-white">Partial</span>
+                    {% elif payment.payment_status == "due" %}
+                      <span class="badge bg-warning text-dark">Due</span>
+                    {% else %}
+                      <span class="badge bg-secondary">{{ payment.payment_status|capfirst }}</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {# Cumulative paid up to this payment #}
+                    {% with cumulative|add:payment.amount_paid as cumulative %}
+                      ₹{{ cumulative|floatformat:2 }}
+                    {% endwith %}
+                  </td>
+                  <td>
+                    {% if forloop.last %}
+                      ₹{{ enrollment.amount_due|floatformat:2 }}
+                    {% else %}
+                      -
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if forloop.last %}
+                      ₹{{ enrollment.amount_remaining|floatformat:2 }}
+                    {% else %}
+                      -
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+                {% endwith %}
+                {% if enrollment.payments.count == 0 %}
+                <tr>
+                  <td colspan="8" class="text-center text-danger">No payments found for this enrollment.</td>
+                </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+          {% empty %}
+          <div class="alert alert-warning text-center">No enrollments found for this student.</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+ 
+{% endblock %}

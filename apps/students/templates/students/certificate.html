@@ -1,0 +1,135 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1122, initial-scale=1.0" />
+  <title>Certificate of Completion  {{ enrollment.certificate_number }}</title>
+  <!-- Google Fonts for web preview -->
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@400;600;800&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', Arial, sans-serif;
+      background: #f3f3f3;
+    }
+    .certificate {
+      width: 1122px;
+      height: 793px;
+      margin: 40px auto;
+      padding: 40px 50px;
+      background: url("{% static 'assets/img/avatars/certificate bg (1).jpg' %}") center center/cover no-repeat;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+      position: relative;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .certificate-number {
+      position: absolute;
+      top: 40px;
+      right: 115px;
+      font-family: 'Poppins', Arial, sans-serif;
+      font-size: 18px;
+      font-weight: bold;
+      color: #222;
+    }
+    .certificate-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 42px;
+      font-weight: 800;
+      margin: 20px 0 5px;
+      color: #222;
+      letter-spacing: 1px;
+      text-align: center;
+    }
+    .certificate-subtitle {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 25px;
+      color: #444;
+      text-align: center;
+    }
+    .recipient-name {
+      font-family: 'Great Vibes', cursive, Arial, sans-serif;
+      font-size: 68px;
+      color: #EF7F1B;
+      display: inline-block;
+      margin: 230px auto 0 auto;
+      border-bottom: 1px solid #000;
+      line-height: 0.6;
+      margin-bottom: -37px;
+      transform: translateY(4px);
+      text-align: center;
+     
+    }
+    .certificate-body {
+      font-family: 'Poppins', Arial, sans-serif;
+      text-align: center;
+      font-size: 18px;
+      font-style: italic;
+      line-height: 1.9;
+      margin: 50px 90px 40px 90px;
+      font-weight: 500;
+      color: #222;
+      border-radius: 8px;
+      padding: 10px 0;
+    }
+    .certificate-body strong {
+      font-weight: 700;
+      font-style: italic;
+    }
+    .footer {
+      text-align: center;
+      font-size: 14px;
+      padding: 10px 0;
+      color: #222;
+      background-color: rgba(255,255,255,0.7);
+      position: absolute;
+      width: 100%;
+      bottom: 0;
+      left: 0;
+      z-index: 3;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <div class="certificate">
+    <!-- Certificate Number -->
+    <div class="certificate-number">
+<strong>
+  {% if enrollment.certificate_number %}
+    {{ enrollment.certificate_number }}
+  {% else %}
+    CP-CN-DEFAULT
+  {% endif %}
+</strong>
+
+     
+    </div>
+
+    <!-- Recipient Name -->
+    <div class="recipient-name">
+      {% if student.full_name %}{{ student.full_name|title }}{% else %}Recipient Name{% endif %}
+    </div>
+
+    <!-- Certificate Body -->
+    <div class="certificate-body">
+      This is to certify that
+      <strong><i>{% if student.full_name %}{{ student.full_name|title }}{% else %}Recipient Name{% endif %}</i></strong>
+      has successfully completed the
+      <strong><i>{% if enrollment.course.course_name %}{{ enrollment.course.course_name }}{% else %}Course Name{% endif %}</i></strong>
+      course offered by our organization.
+      The course was conducted from
+      <strong><i>{% if enrollment.enrollment_date %}{{ enrollment.enrollment_date|date:"F d, Y" }}{% else %}Start Date{% endif %}</i></strong>
+      to
+      <strong><i>{% if end_date %}{{ end_date|date:"F d, Y" }}{% else %}End Date{% endif %}</i></strong>.
+      During this period, {% if student.gender == "Male" %}he{% elif student.gender == "Female" %}she{% else %}they{% endif %}
+      demonstrated excellent dedication and successfully acquired essential industry-relevant skills.
+    </div>
+  </div>
+</body>
+</html>

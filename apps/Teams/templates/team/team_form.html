@@ -1,0 +1,217 @@
+{% extends 'm.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper">
+  <div class="container-xxl flex-grow-1 container-p-y">
+    <div class="row g-6 mb-6">
+      <div class="col-md-10 mx-auto">
+        <div class="card shadow-sm rounded">
+          <h5 class="card-header bg-primary text-white">
+            {% if team.pk %}Edit Team Member{% else %}Add Team Member{% endif %}
+          </h5>
+          <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% if errors %}
+                  <div class="alert alert-danger">
+                    <ul>
+                      {% for field, error_list in errors.items %}
+                        {% for error in error_list %}
+                          <li>{{ field|capfirst }}: {{ error }}</li>
+                        {% endfor %}
+                      {% endfor %}
+                    </ul>
+                  </div>
+                {% endif %}
+                <div class="mb-3">
+                    <label for="id_name">Name</label>
+                    <input type="text" id="id_name" name="name" class="form-control" value="{{ team.name|default_if_none:'' }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="id_designation">Designation</label>
+                    <input type="text" id="id_designation" name="designation" class="form-control" value="{{ team.designation|default_if_none:'' }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="id_phone">Phone</label>
+                    <input type="text" id="id_phone" name="phone" class="form-control" value="{{ team.phone|default_if_none:'' }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="id_email">Email</label>
+                    <input type="email" id="id_email" name="email" class="form-control" value="{{ team.email|default_if_none:'' }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="id_image">Image</label>
+                    <input type="file" id="id_image" name="image" class="form-control">
+                    {% if team.image %}
+                      <img src="{{ team.image.url }}" width="50" height="50" style="object-fit:cover; border-radius:50%; margin-top:5px;">
+                    {% endif %}
+                </div>
+              
+                <div class="mb-3">
+                    <label for="id_state">State</label>
+                    <select id="id_state" name="state" class="form-select" required>
+                        <option value="">Select state</option>
+                        {% for value, label in INDIAN_STATES %}
+                            <option value="{{ value }}" {% if team.state == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="id_city">City</label>
+                    <select id="id_city" name="city" class="form-select" required>
+                        <option value="">Select city</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="id_pincode">Pincode</label>
+                    <input type="text" id="id_pincode" name="pincode" class="form-control" value="{{ team.pincode|default_if_none:'' }}" required>
+                </div>
+                <button type="submit" class="btn btn-primary">{% if team.pk %}Update{% else %}Add{% endif %}</button>
+                <a href="{% url 'team_list' %}" class="btn btn-secondary">Back</a>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+
+<script>
+const cityMap = {
+  "Andhra Pradesh": [
+    "Visakhapatnam", "Vijayawada", "Guntur", "Nellore", "Kurnool", "Rajahmundry", "Tirupati", "Kakinada", "Anantapur", "Eluru", "Kadapa", "Ongole", "Machilipatnam", "Srikakulam", "Chittoor", "Vizianagaram", "Tenali", "Proddatur", "Nandyal", "Adoni", "Madanapalle", "Bhimavaram", "Hindupur", "Guntakal", "Dharmavaram", "Gudivada", "Tadepalligudem", "Narasaraopet", "Tadipatri", "Amalapuram", "Kavali", "Sattenapalle"
+  ],
+  "Arunachal Pradesh": [
+    "Itanagar", "Naharlagun", "Pasighat", "Tawang", "Bomdila", "Ziro", "Tezu", "Roing", "Aalo", "Daporijo", "Changlang", "Khonsa", "Seppa", "Yingkiong", "Anini"
+  ],
+  "Assam": [
+    "Guwahati", "Silchar", "Dibrugarh", "Jorhat", "Nagaon", "Tinsukia", "Tezpur", "Bongaigaon", "Karimganj", "Goalpara", "Dhubri", "Sivasagar", "North Lakhimpur", "Diphu", "Barpeta", "Golaghat", "Hailakandi", "Mangaldoi", "Morigaon", "Dhemaji", "Kokrajhar"
+  ],
+  "Bihar": [
+    "Patna", "Gaya", "Muzaffarpur", "Bhagalpur", "Darbhanga", "Purnia", "Arrah", "Begusarai", "Katihar", "Munger", "Chhapra", "Bihar Sharif", "Danapur", "Sasaram", "Hajipur", "Dehri", "Siwan", "Motihari", "Nawada", "Bettiah", "Saharsa", "Aurangabad", "Samastipur", "Khagaria", "Sitamarhi", "Jamalpur", "Buxar", "Jehanabad", "Lakhisarai", "Sheikhpura", "Madhubani", "Madhepura", "Araria", "Kishanganj"
+  ],
+  "Chhattisgarh": [
+    "Raipur", "Bhilai", "Bilaspur", "Korba", "Durg", "Rajnandgaon", "Jagdalpur", "Raigarh", "Ambikapur", "Dhamtari", "Mahasamund", "Kanker", "Kawardha", "Janjgir", "Champa", "Surguja", "Bemetara", "Balod", "Baloda Bazar"
+  ],
+  "Goa": [
+    "Panaji", "Margao", "Vasco da Gama", "Mapusa", "Ponda", "Bicholim", "Curchorem", "Sanquelim", "Canacona", "Valpoi"
+  ],
+  "Gujarat": [
+    "Ahmedabad", "Surat", "Vadodara", "Rajkot", "Bhavnagar", "Jamnagar", "Gandhinagar", "Junagadh", "Anand", "Navsari", "Bharuch", "Mehsana", "Gandhidham", "Nadiad", "Surendranagar", "Morbi", "Porbandar", "Godhra", "Valsad", "Palanpur", "Bhuj", "Veraval", "Botad", "Dahod", "Amreli", "Patan", "Deesa", "Vapi", "Himatnagar", "Jetpur", "Chhota Udaipur"
+  ],
+  "Haryana": [
+    "Gurgaon", "Faridabad", "Panipat", "Ambala", "Yamunanagar", "Rohtak", "Hisar", "Karnal", "Sonipat", "Panchkula", "Bhiwani", "Sirsa", "Bahadurgarh", "Jind", "Kaithal", "Rewari", "Palwal", "Kurukshetra", "Jhajjar", "Fatehabad", "Mahendragarh", "Charkhi Dadri", "Narnaul"
+  ],
+  "Himachal Pradesh": [
+    "Shimla", "Dharamshala", "Mandi", "Solan", "Kullu", "Bilaspur", "Hamirpur", "Chamba", "Una", "Nahan", "Kangra", "Sundernagar", "Palampur", "Paonta Sahib", "Baddi", "Nalagarh", "Keylong", "Reckong Peo"
+  ],
+  "Jharkhand": [
+    "Ranchi", "Jamshedpur", "Dhanbad", "Bokaro Steel City", "Deoghar", "Hazaribagh", "Giridih", "Ramgarh", "Medininagar", "Chakradharpur", "Chaibasa", "Dumka", "Phusro", "Jhumri Telaiya", "Sahibganj", "Godda", "Simdega", "Latehar", "Lohardaga"
+  ],
+  "Karnataka": [
+    "Bengaluru", "Mysore", "Mangalore", "Hubli", "Belgaum", "Davanagere", "Ballari", "Tumakuru", "Shivamogga", "Bidar", "Raichur", "Hospet", "Hassan", "Gadag", "Kolar", "Chikkamagaluru", "Bagalkot", "Chitradurga", "Udupi", "Mandya", "Bijapur", "Karwar", "Haveri", "Ramanagara", "Yadgir", "Sirsi", "Koppal", "Chikballapur"
+  ],
+  "Kerala": [
+    "Thiruvananthapuram", "Kochi", "Kozhikode", "Kollam", "Thrissur", "Alappuzha", "Palakkad", "Malappuram", "Kannur", "Kottayam", "Pathanamthitta", "Idukki", "Kasargod", "Varkala", "Ponnani", "Thalassery", "Kayamkulam", "Muvattupuzha", "Chengannur"
+  ],
+  "Madhya Pradesh": [
+    "Bhopal", "Indore", "Jabalpur", "Gwalior", "Ujjain", "Sagar", "Dewas", "Satna", "Ratlam", "Rewa", "Katni", "Singrauli", "Burhanpur", "Khandwa", "Chhindwara", "Vidisha", "Shivpuri", "Morena", "Bhind", "Neemuch", "Sehore", "Mandsaur", "Hoshangabad", "Itarsi", "Betul", "Chhatarpur", "Seoni", "Damoh", "Panna", "Sidhi", "Shahdol"
+  ],
+  "Maharashtra": [
+    "Mumbai", "Pune", "Nagpur", "Nashik", "Thane", "Aurangabad", "Solapur", "Amravati", "Kolhapur", "Nanded", "Sangli", "Jalgaon", "Akola", "Latur", "Ahmednagar", "Dhule", "Chandrapur", "Parbhani", "Satara", "Beed", "Yavatmal", "Osmanabad", "Panvel", "Ratnagiri", "Wardha", "Gondia", "Bhandara", "Hingoli", "Washim", "Nandurbar", "Baramati", "Malegaon"
+  ],
+  "Manipur": [
+    "Imphal", "Thoubal", "Bishnupur", "Churachandpur", "Ukhrul", "Senapati", "Kakching", "Jiribam", "Tamenglong", "Chandel"
+  ],
+  "Meghalaya": [
+    "Shillong", "Tura", "Jowai", "Nongpoh", "Baghmara", "Williamnagar", "Nongstoin", "Resubelpara", "Mairang", "Mawkyrwat"
+  ],
+  "Mizoram": [
+    "Aizawl", "Lunglei", "Champhai", "Serchhip", "Kolasib", "Saiha", "Lawngtlai", "Mamit"
+  ],
+  "Nagaland": [
+    "Kohima", "Dimapur", "Mokokchung", "Tuensang", "Wokha", "Zunheboto", "Mon", "Phek", "Kiphire", "Longleng", "Peren"
+  ],
+  "Odisha": [
+    "Bhubaneswar", "Cuttack", "Rourkela", "Berhampur", "Sambalpur", "Puri", "Balasore", "Bhadrak", "Baripada", "Jharsuguda", "Angul", "Dhenkanal", "Kendrapara", "Rayagada", "Koraput", "Jeypore", "Bargarh", "Sundargarh", "Phulbani", "Nabarangpur", "Kalahandi", "Malkangiri", "Nuapada", "Sonepur", "Paradeep"
+  ],
+  "Punjab": [
+    "Ludhiana", "Amritsar", "Jalandhar", "Patiala", "Bathinda", "Mohali", "Hoshiarpur", "Pathankot", "Batala", "Moga", "Abohar", "Khanna", "Phagwara", "Malerkotla", "Barnala", "Firozpur", "Kapurthala", "Faridkot", "Muktsar", "Sangrur", "Gurdaspur", "Ropar", "Fatehgarh Sahib"
+  ],
+  "Rajasthan": [
+    "Jaipur", "Jodhpur", "Udaipur", "Kota", "Ajmer", "Bikaner", "Alwar", "Bhilwara", "Sikar", "Pali", "Sri Ganganagar", "Hanumangarh", "Bharatpur", "Sawai Madhopur", "Chittorgarh", "Tonk", "Jhunjhunu", "Nagaur", "Barmer", "Banswara", "Dholpur", "Jaisalmer", "Churu", "Bundi", "Dausa", "Karauli", "Sirohi", "Pratapgarh", "Jhalawar"
+  ],
+  "Sikkim": [
+    "Gangtok", "Namchi", "Mangan", "Gyalshing", "Rangpo", "Singtam", "Jorethang"
+  ],
+  "Tamil Nadu": [
+    "Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", "Tirunelveli", "Tiruppur", "Vellore", "Erode", "Thoothukudi", "Dindigul", "Thanjavur", "Nagercoil", "Kanchipuram", "Karur", "Sivakasi", "Cuddalore", "Kumbakonam", "Tiruvannamalai", "Ambur", "Pudukkottai", "Nagapattinam", "Villupuram", "Namakkal", "Ramanathapuram", "Ariyalur", "Krishnagiri"
+  ],
+  "Telangana": [
+    "Hyderabad", "Warangal", "Nizamabad", "Karimnagar", "Khammam", "Ramagundam", "Mahbubnagar", "Adilabad", "Suryapet", "Miryalaguda", "Nalgonda", "Siddipet", "Medak", "Jagtial", "Kamareddy", "Mancherial", "Bodhan", "Zaheerabad"
+  ],
+  "Tripura": [
+    "Agartala", "Udaipur", "Dharmanagar", "Kailashahar", "Ambassa", "Belonia", "Khowai", "Sonamura"
+  ],
+  "Uttar Pradesh": [
+    "Lucknow", "Kanpur", "Varanasi", "Agra", "Meerut", "Allahabad", "Ghaziabad", "Noida", "Bareilly", "Aligarh", "Moradabad", "Saharanpur", "Gorakhpur", "Faizabad", "Firozabad", "Jhansi", "Muzaffarnagar", "Mathura", "Shahjahanpur", "Rampur", "Etawah", "Farrukhabad", "Sitapur", "Banda", "Raebareli", "Sultanpur", "Bijnor", "Ballia", "Jaunpur", "Basti", "Azamgarh", "Hardoi", "Unnao", "Hapur", "Amroha", "Bulandshahr", "Gonda", "Barabanki", "Mau", "Mainpuri", "Etah", "Deoria", "Chandauli", "Lakhimpur", "Bahraich", "Balrampur", "Ambedkar Nagar", "Sant Kabir Nagar", "Sambhal", "Kasganj", "Amethi", "Pratapgarh"
+  ],
+  "Uttarakhand": [
+    "Dehradun", "Haridwar", "Roorkee", "Haldwani", "Rudrapur", "Kashipur", "Rishikesh", "Nainital", "Pithoragarh", "Almora", "Tehri", "Pauri", "Chamoli", "Uttarkashi", "Bageshwar", "Champawat"
+  ],
+  "West Bengal": [
+    "Kolkata", "Howrah", "Durgapur", "Asansol", "Siliguri", "Bardhaman", "Malda", "Kharagpur", "Haldia", "Baharampur", "Jalpaiguri", "Balurghat", "Cooch Behar", "Krishnanagar", "Bankura", "Darjeeling", "Raiganj", "Medinipur", "Purulia", "Alipurduar", "Chinsurah", "Bongaon", "Serampore", "Kalyani"
+  ],
+  "Andaman and Nicobar Islands": [
+    "Port Blair", "Car Nicobar", "Havelock Island", "Mayabunder", "Diglipur", "Rangat"
+  ],
+  "Chandigarh": [
+    "Chandigarh"
+  ],
+  "Dadra and Nagar Haveli and Daman and Diu": [
+    "Daman", "Silvassa", "Diu", "Amli", "Kachigam"
+  ],
+  "Delhi": [
+    "New Delhi", "Dwarka", "Rohini", "Karol Bagh", "Saket", "Vasant Kunj", "Laxmi Nagar", "Janakpuri", "Pitampura", "Connaught Place", "Mayur Vihar", "Narela"
+  ],
+  "Jammu and Kashmir": [
+    "Srinagar", "Jammu", "Anantnag", "Baramulla", "Udhampur", "Kathua", "Sopore", "Rajouri", "Pulwama", "Poonch", "Kupwara", "Kulgam", "Doda", "Bandipora", "Budgam", "Ganderbal", "Shopian", "Reasi", "Kishtwar", "Samba"
+  ],
+  "Ladakh": [
+    "Leh", "Kargil", "Diskit", "Nubra", "Padum"
+  ],
+  "Lakshadweep": [
+    "Kavaratti", "Agatti", "Amini", "Andrott", "Kalpeni", "Kadmat", "Minicoy"
+  ],
+  "Puducherry": [
+    "Puducherry", "Karaikal", "Mahe", "Yanam"
+  ]
+};
+
+
+document.addEventListener('DOMContentLoaded', function() {
+  const stateSelect = document.getElementById('id_state');
+  const citySelect = document.getElementById('id_city');
+  function populateCities() {
+    const state = stateSelect.value;
+    citySelect.innerHTML = '<option value="">Select city</option>';
+    if (state && cityMap[state]) {
+      cityMap[state].forEach(function(city) {
+        const opt = document.createElement('option');
+        opt.value = city;
+        opt.textContent = city;
+        citySelect.appendChild(opt);
+      });
+    }
+    // Set selected city if editing
+    {% if team.city %}
+      citySelect.value = "{{ team.city }}";
+    {% endif %}
+  }
+  if (stateSelect && citySelect) {
+    stateSelect.addEventListener('change', populateCities);
+    populateCities();
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,165 @@
+{% load static %}
+
+<!-- Boxicons CDN for icons -->
+<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
+<style>
+    .logo-container {
+        background-color: red;
+        padding-top: 30px;
+        text-align: center;
+        height: 150px;
+    }
+    .brand-logo {
+        width: 80%;
+        max-width: 300px;
+        margin-top: -20px;
+        display: inline-block;
+    }
+    .alert-container {
+        margin: 10px 0;
+    }
+    /* Active menu item style */
+    .menu-vertical .menu-inner > .menu-item.active > .menu-link:not(.menu-toggle) {
+        background-color: #5F61E6;
+        color: #fff !important;
+        position: relative;
+    }
+    .menu-vertical .menu-inner > .menu-item.active > .menu-link:not(.menu-toggle)::before {
+        content: '';
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 10px;
+        height: 10px;
+        background: #a259ff;
+        border-radius: 50%;
+        box-shadow: 0 0 0 2px #fff;
+        z-index: 2;
+    }
+    .menu-vertical .menu-icon {
+        margin-right: 10px;
+        font-size: 1.3rem;
+    }
+    .menu-vertical .menu-link {
+        position: relative;
+        padding-left: 38px !important; /* Space for the dot */
+        color: #333;
+        transition: background 0.2s, color 0.2s;
+    }
+    .menu-vertical .menu-link:hover {
+        background: #edeafd;
+        color: #5F61E6 !important;
+    }
+    .menu-vertical .menu-sub .menu-item.active > .menu-link {
+        background-color: #a259ff;
+        color: #fff !important;
+    }
+</style>
+
+<!-- Layout wrapper -->
+<div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+        <!-- Sidebar Menu -->
+        <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+            <div class="logo-box" align="center">
+                <figure class="logo mt-5">
+                    <a href="{% url 'course_list' %}">
+                        <img src="{% static 'assets/img/avatars/LOGO_CP_FINAL.png' %}" style="width: 130px;" alt="Logo">
+                    </a>
+                </figure>
+            </div>
+            <div class="menu-divider mt-0"></div>
+            <div class="menu-inner-shadow"></div>
+            <ul class="menu-inner py-1">
+                <!-- Courses -->
+                <li class="menu-item {% if sidebar_active == 'courses' %}active{% endif %}">
+                    <a href="{% url 'course_list' %}" class="menu-link">
+                        <i class="menu-icon bx bx-book"></i>
+                        <div class="text-truncate">Courses</div>
+                    </a>
+                </li>
+
+                <!-- Enquiries -->
+                <li class="menu-item {% if sidebar_active == 'enquiries' %}active{% endif %}">
+                    <a href="{% url 'enquiry_list' %}" class="menu-link">
+                        <i class="menu-icon bx bx-message"></i>
+                        <div class="text-truncate">Enquiries</div>
+                    </a>
+                </li>
+
+                <!-- Students -->
+                <li class="menu-item {% if sidebar_active == 'students' %}active{% endif %}">
+                    <a href="{% url 'student_list' %}" class="menu-link">
+                        <i class="menu-icon bx bx-user"></i>
+                        <div class="text-truncate">Students</div>
+                    </a>
+                </li>
+
+                <!-- Trash / Deleted Students -->
+                <li class="menu-item {% if sidebar_active == 'trash' %}active{% endif %}">
+                    <a href="{% url 'student_trash' %}" class="menu-link">
+                        <i class="menu-icon bx bx-trash"></i>
+                        <div class="text-truncate">Trash</div>
+                    </a>
+                </li>
+
+                <!-- Payments & Expenses Group -->
+                <li class="menu-item {% if sidebar_active in 'payments yearly expenses' %}active open{% endif %}">
+                    <a href="javascript:void(0);" class="menu-link menu-toggle">
+                        <i class="menu-icon bx bx-credit-card"></i>
+                        <div class="text-truncate">Payments & Expenses</div>
+                    </a>
+                    <ul class="menu-sub">
+                        <li class="menu-item {% if sidebar_active == 'payments' %}active{% endif %}">
+                            <a href="{% url 'payment_summary' %}" class="menu-link">
+                                <i class="menu-icon bx bx-credit-card"></i>
+                                <div class="text-truncate">Monthly Payments</div>
+                            </a>
+                        </li>
+                        <li class="menu-item {% if sidebar_active == 'yearly' %}active{% endif %}">
+                            <a href="{% url 'yearly_summary' %}" class="menu-link">
+                                <i class="menu-icon bx bx-bar-chart-alt-2"></i>
+                                <div class="text-truncate">Yearly Payments</div>
+                            </a>
+                        </li>
+                        <li class="menu-item {% if sidebar_active == 'expenses' %}active{% endif %}">
+                            <a href="{% url 'expense_summary' %}" class="menu-link">
+                                <i class="menu-icon bx bx-money"></i>
+                                <div class="text-truncate">Monthly Expenses</div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Expenses List (Separate) -->
+                <li class="menu-item {% if sidebar_active == 'expense_list' %}active{% endif %}">
+                    <a href="{% url 'expense_list' %}" class="menu-link">
+                        <i class="menu-icon bx bx-list-ul"></i>
+                        <div class="text-truncate">Expenses List</div>
+                    </a>
+                </li>
+
+                <!-- Team -->
+                <li class="menu-item {% if sidebar_active == 'team' %}active{% endif %}">
+                    <a href="{% url 'team_list' %}" class="menu-link">
+                        <i class="menu-icon bx bx-group"></i>
+                        <div class="text-truncate">Team</div>
+                    </a>
+                </li>
+
+                <!-- Logout -->
+                <li class="menu-item">
+                    <a href="{% url 'logout' %}" class="menu-link" style="color: #dc3545;">
+                        <i class="menu-icon bx bx-log-out"></i>
+                        <div class="text-truncate">Logout</div>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+        <!-- / Sidebar Menu -->
+
+        <!-- Layout container -->
+        <div class="layout-page">
+            <!-- Your top navbar and page content go here -->

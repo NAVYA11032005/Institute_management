@@ -1,0 +1,37 @@
+{% extends 'm.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-7">
+      <div class="card shadow-sm">
+        <div class="card-header bg-danger text-white text-center">
+          <h3>Confirm Enrollment Deletion</h3>
+        </div>
+        <div class="card-body text-center">
+          <p>
+            <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+          </p>
+          <h5>
+            Are you sure you want to <span class="text-danger">delete this enrollment</span>?
+          </h5>
+          <p>
+            <strong>Student:</strong> {{ enrollment.student.full_name }}<br>
+            <strong>Course:</strong> {{ enrollment.course.course_name }}<br>
+            <strong>Enrollment ID:</strong> {{ enrollment.enrollment_id }}
+          </p>
+          <form method="post" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">
+              <i class="fas fa-trash"></i> Yes, Delete Enrollment
+            </button>
+            {% comment %} <a href="{% url 'student_detail' enrollment.student.id %}" class="btn btn-secondary ms-2">
+              Cancel
+            </a> {% endcomment %}
+          </form>
+        </div>
+      </div>
+    </div>
+
+{% endblock %}

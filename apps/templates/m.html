@@ -1,0 +1,103 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Page Title{% endblock %}</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{% static 'assets/img/favicon.ico' %}" />
+
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+      rel="stylesheet" />
+
+    <!-- Vendor Fonts -->
+    <link rel="stylesheet" href="{% static 'assets/vendor/fonts/iconify-icons.css' %}" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="{% static 'assets/vendor/css/core.css' %}" />
+    <link rel="stylesheet" href="{% static 'assets/css/demo.css' %}" />
+
+    <!-- Vendors CSS -->
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css' %}" />
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/apex-charts/apex-charts.css' %}" />
+
+    <!-- Helpers -->
+    <script src="{% static 'assets/vendor/js/helpers.js' %}"></script>
+
+    <!-- Config -->
+    <script src="{% static 'assets/js/config.js' %}"></script>
+  </head>
+  <body>
+    <!-- Include Header -->
+    {% include 'header.html' %}
+
+    <!-- Main Content -->
+  
+    
+      {% block content %}
+      <!-- Page-specific content goes here -->
+      {% endblock %}
+    </div>
+
+    <!-- Include Footer -->
+    {% include 'footer.html' %}
+
+    <!-- Core JS -->
+    <script src="{% static 'assets/vendor/libs/jquery/jquery.js' %}"></script>
+    <script src="{% static 'assets/vendor/libs/popper/popper.js' %}"></script>
+    <script src="{% static 'assets/vendor/js/bootstrap.js' %}"></script>
+    <script src="{% static 'assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js' %}"></script>
+    <script src="{% static 'assets/vendor/js/menu.js' %}"></script>
+
+    <!-- Vendors JS -->
+    <script src="{% static 'assets/vendor/libs/apex-charts/apexcharts.js' %}"></script>
+
+    <!-- Main JS -->
+    <script src="{% static 'assets/js/main.js' %}"></script>
+
+    <!-- Page JS -->
+    <script src="{% static 'assets/js/dashboards-analytics.js' %}"></script>
+
+    <!-- GitHub Widget Button -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        // Example: Add a click event listener to a button
+        const exampleButton = document.getElementById('exampleButton');
+        if (exampleButton) {
+          exampleButton.addEventListener('click', function () {
+            alert('Button clicked!');
+          });
+        }
+
+        // Example: Initialize ApexCharts
+        if (typeof ApexCharts !== 'undefined') {
+          const options = {
+            chart: {
+              type: 'line',
+              height: 350,
+            },
+            series: [
+              {
+                name: 'Sales',
+                data: [10, 20, 30, 40, 50],
+              },
+            ],
+            xaxis: {
+              categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+            },
+          };
+
+          const chart = new ApexCharts(document.querySelector('#chart'), options);
+          chart.render();
+        }
+      });
+    </script>
+  </body>
+</html>

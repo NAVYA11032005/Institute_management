@@ -1,0 +1,207 @@
+{% load static %}
+{% now "Y-m-d H:i" as now %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Payment Receipt {{ payment.id }}</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 14px;
+      color: #000;
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
+    }
+
+    .receipt-container {
+      max-width: 650px;
+      margin: 20px auto;
+      background: #fff;
+      padding: 20px 24px;
+      border: 1px solid #333;
+      border-radius: 8px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #000;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+    }
+
+    .logo-wrap img {
+      width: 90px;
+    }
+
+    .receipt-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 0;
+      color: #000;
+      letter-spacing: 1px;
+    }
+
+    .receipt-date {
+      font-size: 12.2px;
+      color: #444;
+      margin-top: 2px;
+      text-align: right;
+    }
+
+    .receipt-number {
+      margin: 8px 0;
+      font-size: 13px;
+      font-weight: 600;
+      background: #f2f2f2;
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 5px;
+    }
+
+    .section-title {
+      font-weight: 700;
+      font-size: 15px;
+      padding: 6px 10px;
+      margin-top: 14px;
+      margin-bottom: 8px;
+      background: #f4f4f4;
+      border-left: 4px solid #000;
+    }
+
+    table.details-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      margin-bottom: 14px;
+    }
+
+    .details-table th, .details-table td {
+      border: 1px solid #222;
+      padding: 6px 10px;
+      text-align: left;
+    }
+
+    .details-table th {
+      background-color: #eee;
+      font-weight: 600;
+      width: 35%;
+    }
+    .highlight {
+      font-weight: 700;
+      color: #000;
+    }
+
+    .thanks {
+      text-align: center;
+      font-size: 14px;
+      margin-top: 20px;
+      font-style: italic;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #555;
+      border-top: 1px solid #ccc;
+      padding-top: 8px;
+      margin-top: 12px;
+    }
+
+    @media print {
+      body {
+        background: white;
+      }
+
+      .receipt-container {
+        border: none;
+        padding: 10px;
+        max-width: 100%;
+        margin: 0;
+      }
+
+      .receipt-number {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="receipt-container">
+    <div class="header">
+      <div class="logo-wrap">
+        <img src="{% static 'assets/img/avatars/LOGO_CP_FINAL.png' %}" alt="Logo" />
+      </div>
+      <div style="text-align: right;">
+        <div class="receipt-title">Payment Receipt</div>
+        <div class="receipt-date">Printed: {{ now }}</div>
+      </div>
+    </div>
+
+    <div class="receipt-number">
+      Receipt #: PAY{{ payment.id }}
+    </div>
+
+    <div class="section-title">Student & Enrollment Info</div>
+    <table class="details-table">
+      <tr>
+        <th>Student Name</th>
+        <td>{{ student.full_name }}</td>
+      </tr>
+      <tr>
+        <th>Registration No.</th>
+        <td>{{ student.student_id }}</td>
+      </tr>
+      <tr>
+        <th>Course</th>
+        <td>{{ enrollment.course.course_name }}</td>
+      </tr>
+      <tr>
+        <th>Enrollment No.</th>
+        <td>{{ enrollment.t_id|default:enrollment.id }}</td>
+      </tr>
+    </table>
+
+    <div class="section-title">Payment Details</div>
+    <table class="details-table">
+      <tr>
+        <th>Payment Date</th>
+        <td>{{ payment.payment_date|date:"d-m-Y" }}</td>
+      </tr>
+      <tr>
+        <th>Amount Paid</th>
+        <td class="highlight">&#8377;{{ payment.amount_paid|floatformat:2 }}</td>
+      </tr>
+      <tr>
+        <th>Payment Mode</th>
+        <td>{{ payment.get_payment_mode_display }}</td>
+      </tr>
+      <tr>
+        <th>Status</th>
+        <td>
+          {% if payment.payment_status == "paid" %}
+            <span class="highlight">Paid</span>
+          {% elif payment.payment_status == "partial" %}
+            <span style="color:#fd7e14;font-weight: bold;">Partial</span>
+          {% else %}
+            {{ payment.get_payment_status_display }}
+          {% endif %}
+        </td>
+      </tr>
+    </table>
+
+    <div class="thanks">
+      Thank you for your payment!
+    </div>
+
+    <div class="footer">
+      &copy; {{ now|date:"Y" }} Coding Partner. All Rights Reserved.<br>
+      www.codingpartner.in
+    </div>
+  </div>
+  
+</body>
+</html>

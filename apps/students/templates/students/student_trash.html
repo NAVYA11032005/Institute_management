@@ -1,0 +1,177 @@
+{% extends "m.html" %}
+{% load static %}
+{% block title %}Trash - Deleted Students and Enrollments{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    {% comment %} <h2>🗑️ Deleted Students (Trash)</h2>
+    <p class="text-muted mb-4">Here you can view students moved to Trash. You can restore them if deleted by mistake.</p>
+
+    {% if students %}
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Student ID</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Contact</th>
+                    <th>Deleted At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ student.student_id }}</td>
+                    <td>{{ student.full_name }}</td>
+                    <td>{{ student.email }}</td>
+                    <td>{{ student.contact }}</td>
+                    <td>{{ student.deleted_at|date:"Y-m-d H:i" }}</td>
+                    <td>
+                        <form action="{% url 'student_restore' student.student_id %}" method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-success" title="Restore">
+                                <i class="bx bx-undo"></i> Restore
+                            </button>
+                        </form>
+                        {# Uncomment below to enable permanent delete #}
+                        {#
+                        <form action="{% url 'student_permanent_delete' student.student_id %}" method="post" 
+                              style="display: inline;" 
+                              onsubmit="return confirm('Are you sure you want to permanently delete this student?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger" title="Permanent Delete">
+                                <i class="bx bx-trash"></i> Delete
+                            </button>
+                        </form>
+                        #}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            No deleted students found in Trash.
+        </div>
+    {% endif %} {% endcomment %}
+
+    <h2 class="mt-5">🗑️ Deleted Enrollments (Trash)</h2>
+    <p class="text-muted mb-4">View enrollments moved to Trash. You can restore them as needed.</p>
+
+    {% if enrollments %}
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Enrollment ID</th>
+                    <th>Student</th>
+                    <th>Course</th>
+                    <th>Enrollment Date</th>
+                    <th>Deleted At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for enrollment in enrollments %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ enrollment.t_id }}</td>
+                    <td>
+                        {% if enrollment.student %}
+                            {{ enrollment.student.full_name }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if enrollment.course %}
+                            {{ enrollment.course.course_name }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td>{{ enrollment.enrollment_date|date:"Y-m-d" }}</td>
+                    <td>{{ enrollment.deleted_at|date:"Y-m-d H:i" }}</td>
+                    <td>
+                        <form action="{% url 'enrollment_restore' enrollment.pk %}" method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-success" title="Restore">
+                                <i class="bx bx-undo"></i> Restore
+                            </button>
+                        </form>
+                        {# Uncomment below to enable permanent delete #}
+                        
+                        {% comment %} <form action="{% url 'enrollment_permanent_delete' enrollment.pk %}" method="post" 
+                              style="display: inline;" 
+                              onsubmit="return confirm('Are you sure you want to permanently delete this enrollment?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger" title="Permanent Delete">
+                                <i class="bx bx-trash"></i> Delete
+                            </button>
+                        </form> {% endcomment %}
+                       
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            No deleted enrollments found in Trash.
+        </div>
+    {% endif %}
+    <h2 class="mt-5">🗑️ Deleted Enquiries (Trash)</h2>
+<p class="text-muted mb-4">Here you can view enquiries moved to Trash. You can restore them if deleted by mistake.</p>
+
+{% if enquiries %}
+  <table class="table table-striped table-hover align-middle">
+    <thead class="table-dark">
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Course</th>
+        <th>State</th>
+        <th>City</th>
+        <th>Created At</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for enquiry in enquiries %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ enquiry.name }}</td>
+        <td>{{ enquiry.email }}</td>
+        <td>{{ enquiry.phone }}</td>
+        <td>{{ enquiry.course.course_name }}</td>
+        <td>{{ enquiry.state }}</td>
+        <td>{{ enquiry.city }}</td>
+        <td>{{ enquiry.created_at|date:"Y-m-d H:i" }}</td>
+        <td>
+          <form action="{% url 'enquiry_restore' enquiry.pk %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-success" title="Restore">
+              <i class="bx bx-undo"></i> Restore
+            </button>
+          </form>
+          {# Permanent delete form can be added similarly, commented out for now #}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <div class="alert alert-info">No deleted enquiries found in Trash.</div>
+{% endif %}
+
+
+    <a href="{% url 'student_list' %}" class="btn btn-secondary mt-3">
+        <i class="bx bx-arrow-back"></i> Back to Student List
+    </a>
+
+{% endblock %}

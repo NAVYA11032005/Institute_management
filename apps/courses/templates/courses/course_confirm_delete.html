@@ -1,0 +1,25 @@
+{% extends 'm.html' %}
+{% load static %}
+{% block content %}
+
+<div class="content-wrapper">
+    <div class="container-xxl flex-grow-1 container-p-y">
+        <div class="row g-6 mb-6">
+            <div class="col-md">
+                <div class="card">
+                    <h5 class="card-header">Delete Course</h5>
+                    <div class="card-body">
+                        <h2>Are you sure you want to delete the course "{{ course }}"?</h2>
+                        <form method="POST" action="">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                                <a href="{% url 'course_list' %}" class="btn btn-secondary">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+     
+
+{% endblock %}
