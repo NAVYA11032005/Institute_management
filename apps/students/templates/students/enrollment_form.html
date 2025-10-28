@@ -14,8 +14,8 @@
             <form method="post" enctype="multipart/form-data" novalidate>
               {% csrf_token %}
               {% if form.errors %}
-  <div class="alert alert-danger">{{ form.errors }}</div>
-{% endif %}
+                <div class="alert alert-danger">{{ form.errors }}</div>
+              {% endif %}
 
               <!-- Student Type Selection -->
               <div class="mb-3">
@@ -28,24 +28,22 @@
 
               <!-- Previous Student Dropdown -->
               <div class="mb-3" id="previous-student-div" style="display:none;">
-  <label for="{{ form.previous_student.id_for_label }}" class="form-label">Select Existing Student (by Name)</label>
-  {{ form.previous_student }}{{ form.previous_student.errors }}
-</div>
+                <label for="{{ form.previous_student.id_for_label }}" class="form-label">Select Existing Student (by Name)</label>
+                {{ form.previous_student }}{{ form.previous_student.errors }}
+              </div>
 
-<!-- Student Information -->
-<div id="student-info-section">
-  <h6 class="text-primary mb-3">Student Information</h6>
-  <div class="row">
-    <div class="col-md-6 mb-3">
-      <label for="{{ form.full_name.id_for_label }}" class="form-label">Full Name</label>
-      {{ form.full_name }}{{ form.full_name.errors }}
-    </div>
-    <div class="col-md-6 mb-3">
-      <label for="{{ form.father_name.id_for_label }}" class="form-label">Father's Name</label>
-      {{ form.father_name }}{{ form.father_name.errors }}
-    </div>
-
-
+              <!-- Student Information -->
+              <div id="student-info-section">
+                <h6 class="text-primary mb-3">Student Information</h6>
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ form.full_name.id_for_label }}" class="form-label">Full Name</label>
+                    {{ form.full_name }}{{ form.full_name.errors }}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ form.father_name.id_for_label }}" class="form-label">Father's Name</label>
+                    {{ form.father_name }}{{ form.father_name.errors }}
+                  </div>
                   <div class="col-md-6 mb-3">
                     <label for="{{ form.gender.id_for_label }}" class="form-label">Gender</label>
                     {{ form.gender }}{{ form.gender.errors }}
@@ -54,10 +52,10 @@
                     <label for="{{ form.dob.id_for_label }}" class="form-label">Date of Birth</label>
                     {{ form.dob }}{{ form.dob.errors }}
                   </div>
-                 <div class="col-md-6 mb-3">
-  <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
-  {{ form.email }}{{ form.email.errors }}
-</div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                    {{ form.email }}{{ form.email.errors }}
+                  </div>
                   <div class="col-md-6 mb-3">
                     <label for="{{ form.contact.id_for_label }}" class="form-label">Contact Number</label>
                     {{ form.contact }}{{ form.contact.errors }}
@@ -75,13 +73,13 @@
                     {{ form.state }}{{ form.state.errors }}
                   </div>
                   <div class="col-md-6 mb-3">
-  <label for="{{ form.city.id_for_label }}" class="form-label">City</label>
-  <select id="{{ form.city.id_for_label }}" name="city" class="form-select">
-    <option value="">---------</option>
-    <!-- Options will be filled by JS -->
-  </select>
-  {{ form.city.errors }}
-</div>
+                    <label for="{{ form.city.id_for_label }}" class="form-label">City</label>
+                    <select id="{{ form.city.id_for_label }}" name="city" class="form-select">
+                      <option value="">---------</option>
+                      <!-- city options filled by JS -->
+                    </select>
+                    {{ form.city.errors }}
+                  </div>
                   <div class="col-md-6 mb-3">
                     <label for="{{ form.pincode.id_for_label }}" class="form-label">Pincode</label>
                     {{ form.pincode }}{{ form.pincode.errors }}
@@ -89,9 +87,7 @@
                   <div class="col-md-6 mb-3">
                     <label for="{{ form.photo.id_for_label }}" class="form-label">Profile Photo (Max 500KB)</label>
                     {% if form.instance.photo %}
-                      <div>
-                        <img src="{{ form.instance.photo.url }}" style="max-width:120px; margin-top:10px;">
-                      </div>
+                      <div><img src="{{ form.instance.photo.url }}" style="max-width:120px; margin-top:10px; border-radius:5px;"></div>
                     {% endif %}
                     {{ form.photo }}{{ form.photo.errors }}
                     <img id="photoPreview" style="display:none;max-width:120px;margin-top:10px;border-radius:5px;" />
@@ -106,9 +102,7 @@
                   <div class="col-md-6 mb-3">
                     <label for="{{ form.documents.id_for_label }}" class="form-label">Documents</label>
                     {% if form.instance.documents %}
-                      <div>
-                        <a href="{{ form.instance.documents.url }}" target="_blank">Current Document</a>
-                      </div>
+                      <div><a href="{{ form.instance.documents.url }}" target="_blank">Current Document</a></div>
                     {% endif %}
                     {{ form.documents }}{{ form.documents.errors }}
                   </div>
@@ -126,7 +120,9 @@
                   </div>
                 </div>
               </div>
+
               <hr>
+
               <!-- Enrollment & Payment -->
               <h6 class="text-primary mb-3">Enrollment & Payment</h6>
               <div class="row">
@@ -145,6 +141,10 @@
                 <div class="col-md-6 mb-3">
                   <label for="{{ form.discount.id_for_label }}" class="form-label">Discount</label>
                   {{ form.discount }}{{ form.discount.errors }}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="{{ form.admission_fee.id_for_label }}" class="form-label">Admission Fee</label>
+                  {{ form.admission_fee }}{{ form.admission_fee.errors }}
                 </div>
                 <div class="col-md-6 mb-3">
                   <label class="form-label">Final Amount</label>
@@ -205,34 +205,25 @@
             </form>
           </div>
         </div>
-    
-
+      </div>
+    </div>
+  </div>
 
 
 <script>
-// Student Type Toggle Logic
-function toggleStudentFields() {
-  var studentType = document.querySelector('input[name="student_type"]:checked').value;
-  var studentInfoSection = document.getElementById('student-info-section');
-  var previousStudentDiv = document.getElementById('previous-student-div');
-  if (studentType === 'previous') {
-    studentInfoSection.style.display = 'none';
-    previousStudentDiv.style.display = '';
-  } else {
-    studentInfoSection.style.display = '';
-    previousStudentDiv.style.display = 'none';
+  // Student Type Toggle
+  function toggleStudentFields() {
+    const type = document.querySelector('input[name="student_type"]:checked').value;
+    document.getElementById('student-info-section').style.display = (type === 'previous') ? 'none' : '';
+    document.getElementById('previous-student-div').style.display = (type === 'previous') ? '' : 'none';
   }
-}
-document.addEventListener('DOMContentLoaded', function() {
-  var radios = document.querySelectorAll('input[name="student_type"]');
-  radios.forEach(function(radio) {
-    radio.addEventListener('change', toggleStudentFields);
+  document.querySelectorAll('input[name="student_type"]').forEach(r => {
+    r.addEventListener('change', toggleStudentFields);
   });
   toggleStudentFields();
-});
 
-// City Dropdown Logic
-const cityMap = {
+  // City Dropdown
+  const cityMap = {
   "Andhra Pradesh": [
     "Visakhapatnam", "Vijayawada", "Guntur", "Nellore", "Kurnool", "Rajahmundry", "Tirupati", "Kakinada", "Anantapur", "Eluru", "Kadapa", "Ongole", "Machilipatnam", "Srikakulam", "Chittoor", "Vizianagaram", "Tenali", "Proddatur", "Nandyal", "Adoni", "Madanapalle", "Bhimavaram", "Hindupur", "Guntakal", "Dharmavaram", "Gudivada", "Tadepalligudem", "Narasaraopet", "Tadipatri", "Amalapuram", "Kavali", "Sattenapalle"
   ],
@@ -342,163 +333,163 @@ const cityMap = {
     "Puducherry", "Karaikal", "Mahe", "Yanam"
   ]
 };
-function updateCityDropdown() {
-  const stateSelect = document.getElementById('{{ form.state.id_for_label }}');
-  const citySelect = document.getElementById('{{ form.city.id_for_label }}');
-  const selectedState = stateSelect.value;
-  const selectedCity = "{{ form.instance.city|escapejs }}";
-  citySelect.innerHTML = '<option value="">---------</option>';
-  if (selectedState && cityMap[selectedState]) {
-    cityMap[selectedState].forEach(function(city) {
+
+  function updateCityDropdown() {
+    const stateSel = document.getElementById('{{ form.state.id_for_label }}');
+    const citySel = document.getElementById('{{ form.city.id_for_label }}');
+    const cities = cityMap[stateSel.value] || [];
+    const selectedCity = "{{ form.instance.city|escapejs }}";
+    citySel.innerHTML = '<option value="">---------</option>';
+    cities.forEach(city => {
       const option = document.createElement('option');
       option.value = city;
       option.textContent = city;
-      if (city === selectedCity) {
-        option.selected = true;
-      }
-      citySelect.appendChild(option);
+      if(city === selectedCity) option.selected = true;
+      citySel.appendChild(option);
     });
   }
-}
-document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('{{ form.state.id_for_label }}').addEventListener('change', updateCityDropdown);
   updateCityDropdown();
-});
 
-// Course Data and Calculation
-const courseData = {
-  {% for course in courses %}
+  // Course Data & Calculations
+  const courseData = {
+    {% for course in courses %}
     "{{ course.id }}": {
-      "fee": {{ course.course_fee }},
-      "duration": {{ course.course_duration }},
-      "duration_type": "{{ course.duration_type }}",
-      "name": "{{ course.course_name|escapejs }}"
+      fee: {{ course.course_fee }},
+      duration: {{ course.course_duration }},
+      duration_type: "{{ course.duration_type }}",
+      name: "{{ course.course_name|escapejs }}"
     },
-  {% endfor %}
-};
-function updateCourseFields() {
-  const courseField = document.getElementById('{{ form.course.id_for_label }}');
-  const durationField = document.getElementById('course_duration');
-  const feeField = document.getElementById('course_fee');
-  const discountField = document.getElementById('{{ form.discount.id_for_label }}');
-  const finalAmountField = document.getElementById('final_amount');
-  const paymentMethodField = document.getElementById('{{ form.payment_method.id_for_label }}');
-  const totalInstallmentsField = document.getElementById('{{ form.total_installments.id_for_label }}');
-  const installmentsDiv = document.getElementById('installmentsDiv');
-  const initialPaymentDiv = document.getElementById('initialPaymentDiv');
-  const amountDueField = document.getElementById('amount_due');
-  const amountRemainingField = document.getElementById('amount_remaining');
-  const initialPaymentField = document.getElementById('{{ form.initial_payment.id_for_label }}');
-  const errorDiv = document.getElementById('initialPaymentError');
+    {% endfor %}
+  };
+  function updateCourseFields() {
+    const courseSelect = document.getElementById('{{ form.course.id_for_label }}');
+    const discountField = document.getElementById('{{ form.discount.id_for_label }}');
+    const admissionFeeField = document.getElementById('{{ form.admission_fee.id_for_label }}');
+    const paymentMethodField = document.getElementById('{{ form.payment_method.id_for_label }}');
+    const totalInstallmentsField = document.getElementById('{{ form.total_installments.id_for_label }}');
+    const initialPaymentField = document.getElementById('{{ form.initial_payment.id_for_label }}');
 
-  let course = courseData[courseField.value];
-  let fee = course ? parseFloat(course.fee) : 0;
-  let duration = course ? parseInt(course.duration) : 1;
-  let durationType = course ? course.duration_type : '';
-  let discount = parseFloat(discountField.value) || 0;
-  let finalAmount = fee - discount;
-  if (finalAmount < 0) finalAmount = 0;
-  let initial = parseFloat(initialPaymentField.value) || 0;
-  let paymentMethod = paymentMethodField.value;
-  let totalInstallments = parseInt(totalInstallmentsField.value) || 1;
-  let amountDue = '';
-  let amountRemaining = '';
+    const durationDisplay = document.getElementById('course_duration');
+    const feeDisplay = document.getElementById('course_fee');
+    const finalAmountDisplay = document.getElementById('final_amount');
+    const amountDueField = document.getElementById('amount_due');
+    const amountRemainingField = document.getElementById('amount_remaining');
+    const installmentsDiv = document.getElementById('installmentsDiv');
+    const initialPaymentDiv = document.getElementById('initialPaymentDiv');
+    const errorDiv = document.getElementById('initialPaymentError');
 
-  if (course) {
-    let label = durationType === "weeks" ? "Weeks" : "Months";
-    durationField.value = `${duration} ${label}`;
-    feeField.value = fee;
-  } else {
-    durationField.value = "";
-    feeField.value = "";
+    const course = courseData[courseSelect.value];
+    const discount = parseFloat(discountField.value) || 0;
+    const admissionFee = parseFloat(admissionFeeField.value) || 0;
+    const paymentMethod = paymentMethodField.value;
+    const totalInstallments = parseInt(totalInstallmentsField.value) || 1;
+    const initial = parseFloat(initialPaymentField.value) || 0;
+
+    if(course){
+      durationDisplay.value = course.duration + (course.duration_type === 'weeks' ? ' Weeks' : ' Months');
+      feeDisplay.value = course.fee.toFixed(2);
+    } else {
+      durationDisplay.value = "";
+      feeDisplay.value = "";
+    }
+
+    let finalAmount = course ? course.fee - discount + admissionFee : 0;
+    if(finalAmount < 0) finalAmount = 0;
+    finalAmountDisplay.value = finalAmount.toFixed(2);
+
+    // Show/hide installments and initial payment fields according to payment method
+    if(paymentMethod === 'installment'){
+      installmentsDiv.style.display = '';
+      initialPaymentDiv.style.display = '';
+      initialPaymentField.removeAttribute('readonly');
+      let perInstallment = totalInstallments > 0 ? Math.ceil(finalAmount / totalInstallments) : 0;
+      let due = perInstallment - initial;
+      if(due < 0) due = 0;
+      let remaining = finalAmount - initial;
+      if(remaining < 0) remaining = 0;
+      amountDueField.value = due.toFixed(2);
+      amountRemainingField.value = remaining.toFixed(2);
+    } else if(paymentMethod === 'monthly'){
+      installmentsDiv.style.display = 'none';
+      initialPaymentDiv.style.display = '';
+      initialPaymentField.removeAttribute('readonly');
+      let durationMonths = course ? course.duration : 1;
+      let perMonth = durationMonths > 0 ? Math.ceil(finalAmount / durationMonths) : 0;
+      let due = perMonth - initial;
+      if(due < 0) due = 0;
+      let remaining = finalAmount - initial;
+      if(remaining < 0) remaining = 0;
+      amountDueField.value = due.toFixed(2);
+      amountRemainingField.value = remaining.toFixed(2);
+    } else if(paymentMethod === 'one_time'){
+      installmentsDiv.style.display = 'none';
+      initialPaymentDiv.style.display = '';
+      initialPaymentField.value = finalAmount.toFixed(2);
+      initialPaymentField.setAttribute('readonly', 'readonly');
+      amountDueField.value = '0.00';
+      amountRemainingField.value = '0.00';
+    } else {
+      installmentsDiv.style.display = 'none';
+      initialPaymentDiv.style.display = 'none';
+      amountDueField.value = '';
+      amountRemainingField.value = '';
+      initialPaymentField.value = '';
+    }
+
+    if(paymentMethod !== 'one_time' && initial > finalAmount){
+      errorDiv.textContent = "Initial payment cannot exceed final amount.";
+    } else {
+      errorDiv.textContent = "";
+    }
   }
+  document.addEventListener('DOMContentLoaded', function(){
+    ['{{ form.course.id_for_label }}',
+     '{{ form.discount.id_for_label }}',
+     '{{ form.admission_fee.id_for_label }}',
+     '{{ form.payment_method.id_for_label }}',
+     '{{ form.total_installments.id_for_label }}',
+     '{{ form.initial_payment.id_for_label }}',
+    ].forEach(id =>
+      document.getElementById(id).addEventListener('input', updateCourseFields)
+    );
+    updateCourseFields();
+  });
 
-  finalAmountField.value = finalAmount;
-
-  if (paymentMethod === 'installment') {
-    installmentsDiv.style.display = '';
-    initialPaymentDiv.style.display = '';
-    initialPaymentField.removeAttribute('readonly');
-    let perInstallment = totalInstallments > 0 ? Math.ceil(finalAmount / totalInstallments) : 0;
-    amountDue = perInstallment - initial;
-    if (amountDue < 0) amountDue = 0;
-    amountRemaining = finalAmount - initial;
-    if (amountRemaining < 0) amountRemaining = 0;
-  } else if (paymentMethod === 'monthly') {
-    installmentsDiv.style.display = 'none';
-    initialPaymentDiv.style.display = '';
-    initialPaymentField.removeAttribute('readonly');
-    let perMonth = duration > 0 ? Math.ceil(finalAmount / duration) : 0;
-    amountDue = perMonth - initial;
-    if (amountDue < 0) amountDue = 0;
-    amountRemaining = finalAmount - initial;
-    if (amountRemaining < 0) amountRemaining = 0;
-  } else if (paymentMethod === 'one_time') {
-    installmentsDiv.style.display = 'none';
-    initialPaymentDiv.style.display = '';
-    initialPaymentField.value = finalAmount;
-    initialPaymentField.setAttribute('readonly', 'readonly');
-    amountDue = 0;
-    amountRemaining = 0;
-  } else {
-    installmentsDiv.style.display = 'none';
-    initialPaymentDiv.style.display = 'none';
-    amountDue = '';
-    amountRemaining = '';
-    initialPaymentField.value = '';
-  }
-
-  amountDueField.value = amountDue;
-  amountRemainingField.value = amountRemaining;
-
-  if (paymentMethod !== 'one_time' && initial > finalAmount) {
-    errorDiv.textContent = "Initial payment cannot exceed final amount.";
-  } else {
-    errorDiv.textContent = "";
-  }
-}
-document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('{{ form.course.id_for_label }}').addEventListener('change', updateCourseFields);
-  document.getElementById('{{ form.discount.id_for_label }}').addEventListener('input', updateCourseFields);
-  document.getElementById('{{ form.payment_method.id_for_label }}').addEventListener('change', updateCourseFields);
-  document.getElementById('{{ form.total_installments.id_for_label }}').addEventListener('input', updateCourseFields);
-  document.getElementById('{{ form.initial_payment.id_for_label }}').addEventListener('input', updateCourseFields);
-  updateCourseFields();
-});
-
-// Webcam logic
-const openWebcamBtn = document.getElementById('openWebcamBtn');
-const webcamModal = document.getElementById('webcamModal');
-const webcamVideo = document.getElementById('webcamVideo');
-const captureBtn = document.getElementById('captureBtn');
-const webcamCanvas = document.getElementById('webcamCanvas');
-const photoPreview = document.getElementById('photoPreview');
-const closeWebcamBtn = document.getElementById('closeWebcamBtn');
-openWebcamBtn.addEventListener('click', async () => {
-  webcamModal.style.display = 'block';
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-    webcamVideo.srcObject = stream;
-  } catch (err) {
-    alert("Webcam not accessible.");
-  }
-});
-captureBtn.addEventListener('click', () => {
-  webcamCanvas.width = webcamVideo.videoWidth;
-  webcamCanvas.height = webcamVideo.videoHeight;
-  const ctx = webcamCanvas.getContext('2d');
-  ctx.drawImage(webcamVideo, 0, 0, webcamCanvas.width, webcamCanvas.height);
-  const dataUrl = webcamCanvas.toDataURL('image/png');
-  photoPreview.src = dataUrl;
-  photoPreview.style.display = 'block';
-  webcamVideo.srcObject.getTracks().forEach(track => track.stop());
-  webcamModal.style.display = 'none';
-});
-closeWebcamBtn.addEventListener('click', () => {
-  if (webcamVideo.srcObject) {
+  // Webcam capture logic
+  const openWebcamBtn = document.getElementById('openWebcamBtn');
+  const webcamModal = document.getElementById('webcamModal');
+  const webcamVideo = document.getElementById('webcamVideo');
+  const captureBtn = document.getElementById('captureBtn');
+  const webcamCanvas = document.getElementById('webcamCanvas');
+  const photoPreview = document.getElementById('photoPreview');
+  const closeWebcamBtn = document.getElementById('closeWebcamBtn');
+  openWebcamBtn.addEventListener('click', async () => {
+    webcamModal.style.display = 'block';
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      webcamVideo.srcObject = stream;
+    } catch {
+      alert('Unable to access the webcam.');
+    }
+  });
+  captureBtn.addEventListener('click', () => {
+    webcamCanvas.width = webcamVideo.videoWidth;
+    webcamCanvas.height = webcamVideo.videoHeight;
+    const ctx = webcamCanvas.getContext('2d');
+    ctx.drawImage(webcamVideo, 0, 0, webcamCanvas.width, webcamCanvas.height);
+    const dataUrl = webcamCanvas.toDataURL('image/png');
+    photoPreview.src = dataUrl;
+    photoPreview.style.display = 'block';
     webcamVideo.srcObject.getTracks().forEach(track => track.stop());
-  }
-  webcamModal.style.display = 'none';
-});
+    webcamModal.style.display = 'none';
+  });
+  closeWebcamBtn.addEventListener('click', () => {
+    if(webcamVideo.srcObject) {
+      webcamVideo.srcObject.getTracks().forEach(track => track.stop());
+    }
+    webcamModal.style.display = 'none';
+  });
 </script>
+
 {% endblock %}

@@ -22,15 +22,16 @@
       box-shadow: 0 3px 16px rgba(44,62,80,0.08);
       position: relative;
     }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 7px;
-    }
-    .logo-container img {
-      width: 90px;
-      height: auto;
+    .receipt-number {
+      position: absolute;
+      top: 12px;
+      right: 18px;
+      font-size: 0.9em;
+      color: #888;
+      background: #f5f7fa;
+      padding: 2px 7px;
+      border-radius: 8px;
+      letter-spacing: 0.4px;
     }
     .receipt-title {
       text-align: center;
@@ -46,17 +47,6 @@
       font-size: 0.93em;
       margin-bottom: 12px;
     }
-    .receipt-number {
-      position: absolute;
-      top: 12px;
-      right: 18px;
-      font-size: 0.9em;
-      color: #888;
-      background: #f5f7fa;
-      padding: 2px 7px;
-      border-radius: 8px;
-      letter-spacing: 0.4px;
-    }
     .section-title {
       background: #f8fafc;
       font-weight: 700;
@@ -69,33 +59,6 @@
       color: #222;
       letter-spacing: 0.3px;
       margin-top: 11px;
-    }
-    .student-info-flex {
-      display: flex;
-      align-items: flex-start;
-      gap: 11px;
-      margin-bottom: 7px;
-    }
-    .student-photo-block {
-      min-width: 85px;
-      text-align: center;
-    }
-    .student-photo-block img {
-      width: 85px;
-      height: 85px;
-      object-fit: cover;
-      border-radius: 7px;
-      border: 2px solid #e3e7ed;
-      background: #f8fafc;
-    }
-    .photo-label {
-      font-size: 11px;
-      color: #888;
-      margin-bottom: 2px;
-      text-align: center;
-    }
-    .student-details-table {
-      flex: 1;
     }
     table {
       width: 100%;
@@ -127,6 +90,13 @@
       color: #dc3545;
       font-weight: 700;
     }
+    .thanks {
+      text-align: center;
+      color: #0d6efd;
+      font-weight: 600;
+      font-size: 1.04em;
+      margin: 12px 0 2px 0;
+    }
     .footer {
       text-align: center;
       color: #777;
@@ -134,13 +104,6 @@
       border-top: 1px solid #e3e7ed;
       padding-top: 8px;
       margin-top: 12px;
-    }
-    .thanks {
-      text-align: center;
-      color: #0d6efd;
-      font-weight: 600;
-      font-size: 1.04em;
-      margin: 12px 0 2px 0;
     }
     @media print {
       body { background: white; }
@@ -154,169 +117,70 @@
   <div class="receipt-number">
     Receipt #: <strong>{{ enrollment.t_id|default:enrollment.id }}</strong>
   </div>
-  <div class="header">
-    <div class="logo-container">
-      <img src="{% static 'assets/img/avatars/LOGO_CP_FINAL.png' %}" alt="Coding Partner Logo">
-    </div>
-  </div>
+
   <div class="receipt-title">Enrollment Receipt</div>
   <div class="receipt-meta">
     Issued: {{ now|date:"d M Y, H:i" }}
   </div>
 
-<div class="section-title">Student Information</div>
+  <div class="section-title">Student Information</div>
 <table>
   <tr>
-    <th rowspan="5" style="text-align:center; vertical-align:middle; background:#f8fafc;">
-      <span class="photo-label" style="display:block; margin-bottom:6px;">Photo</span>
-      {% if student_photo %}
-        <img src="{{ student_photo }}" alt="Student Photo" style="width:80px; height:80px; object-fit:cover; border-radius:8px; border:2px solid #e3e7ed; background:#f8fafc;">
+    <td colspan="4" style="text-align:center; padding:15px;">
+      {% if enrollment.student.photo %}
+        <img src="{{ enrollment.student.photo.url }}" alt="Student Photo" style="max-height:120px; border-radius:10px; object-fit:cover;" />
       {% else %}
-        <img src="{% static 'default_student.png' %}" alt="No Photo" style="width:80px; height:80px; object-fit:cover; border-radius:8px; border:2px solid #e3e7ed; background:#f8fafc;">
+        <img src="{% static 'images/user-icon.png' %}" alt="Default User Icon" style="max-height:120px; opacity:0.6;" />
       {% endif %}
-    </th>
+    </td>
+  </tr>
+  <tr>
     <th>Name</th>
-    <td>{{ enrollment.full_name }}</td>
+    <td>{{ enrollment.student.full_name }}</td>
     <th>Father's Name</th>
-    <td>{{ enrollment.father_name }}</td>
+    <td>{{ enrollment.student.father_name }}</td>
   </tr>
   <tr>
     <th>Date of Birth</th>
-    <td>{{ enrollment.dob|date:"d-m-Y" }}</td>
+    <td>{{ enrollment.student.dob|date:"d-m-Y" }}</td>
     <th>Gender</th>
-    <td>{{ enrollment.get_gender_display }}</td>
+    <td>{{ enrollment.student.get_gender_display }}</td>
   </tr>
   <tr>
     <th>Contact</th>
-    <td>{{ enrollment.contact }}</td>
+    <td>{{ enrollment.student.contact }}</td>
     <th>Email</th>
-    <td>{{ enrollment.email }}</td>
+    <td>{{ enrollment.student.email }}</td>
   </tr>
   <tr>
     <th>Address</th>
-    <td colspan="3">{{ enrollment.address }}, {{ enrollment.city }}, {{ enrollment.state }} - {{ enrollment.pincode }}</td>
-  </tr>
-  <tr>
-    <th>Referral Source</th>
-    <td>{{ enrollment.referral_source|default:"-" }}</td>
-    <th>Referred By</th>
-    <td>
-      {% if enrollment.referred_by %}
-        {{ enrollment.referred_by.full_name }} ({{ enrollment.referred_by.student_id }})
-      {% elif enrollment.referred_by_name %}
-        {{ enrollment.referred_by_name }}
-      {% else %}
-        -
-      {% endif %}
+    <td colspan="3">
+      {{ enrollment.student.address }}, {{ enrollment.student.city }}, {{ enrollment.student.state }} - {{ enrollment.student.pincode }}
     </td>
   </tr>
 </table>
 
-  <div class="section-title">Enrollment & Fee Details</div>
+
+  <div class="section-title">Course Details</div>
   <table>
     <tr>
-      <th>Course</th>
+      <th>Course Name</th>
       <td>{{ enrollment.course.course_name }}</td>
+      <th>Course Fee</th>
+      <td>₹ {{ enrollment.final_amount|floatformat:2 }}</td>
+    </tr>
+    <tr>
+      <th>Course Duration</th>
+      <td>{{ enrollment.course.course_duration }} {{ enrollment.course.get_duration_type_display }}</td>
       <th>Batch Time</th>
       <td>{{ enrollment.batch_time|default:"Not Assigned" }}</td>
     </tr>
     <tr>
       <th>Enrollment Date</th>
       <td>{{ enrollment.enrollment_date|date:"d-m-Y" }}</td>
-      <th>Due Date</th>
-      <td>{{ enrollment.due_date|date:"d-m-Y"|default:"-" }}</td>
-    </tr>
-    <tr>
-      <th>Payment Method</th>
-      <td>{{ enrollment.get_payment_method_display }}</td>
-      <th>Payment Mode</th>
-      <td>{{ enrollment.get_payment_mode_display }}</td>
-    </tr>
-    <tr>
-      <th>Status</th>
-      <td>
-        {% if enrollment.status == "active" %}
-          <span class="highlight">Active</span>
-        {% elif enrollment.status == "deactive" %}
-          <span style="color:#fd7e14;font-weight:600;">Deactive</span>
-        {% elif enrollment.status == "completed" %}
-          <span style="color:#198754;font-weight:600;">Completed</span>
-        {% else %}
-          {{ enrollment.get_status_display }}
-        {% endif %}
-      </td>
-      <th>Payment Status</th>
-      <td>
-        {% if enrollment.payment_status == "paid" %}
-          <span class="highlight">Paid</span>
-        {% elif enrollment.payment_status == "partial" %}
-          <span style="color:#fd7e14;font-weight:600;">Partial</span>
-        {% elif enrollment.payment_status == "due" %}
-          <span class="due-amount">Due</span>
-        {% else %}
-          {{ enrollment.get_payment_status_display }}
-        {% endif %}
-      </td>
+     
     </tr>
   </table>
-
-  <div class="section-title">Fee Summary</div>
-  <table>
-    <tr>
-      <th>Course Fee</th>
-      <td>Rs. {{ enrollment.course.course_fee }}</td>
-      <th>Discount</th>
-      <td>Rs. {{ enrollment.discount|default:"0.00" }}</td>
-    </tr>
-    <tr>
-      <th>Final Amount</th>
-      <td class="highlight">Rs. {{ enrollment.final_amount }}</td>
-      <th>Amount Paid</th>
-      <td>Rs. {{ enrollment.amount_paid }}</td>
-    </tr>
-    <tr>
-      <th>Amount Remaining</th>
-      <td>
-        {% if enrollment.amount_remaining > 0 %}
-          <span class="due-amount">Rs. {{ enrollment.amount_remaining }}</span>
-        {% else %}
-          <span class="highlight">Rs. 0</span>
-        {% endif %}
-      </td>
-      <th>Total Installments</th>
-      <td>{{ enrollment.total_installments|default:"-" }}</td>
-    </tr>
-  </table>
-
-  {% comment %} <div class="section-title">Payment History</div>
-  <table>
-    <tr>
-      <th>Date</th>
-      <th>Amount</th>
-      <th>Mode</th>
-      <th>Status</th>
-    </tr>
-    {% for payment in enrollment.payments.all %}
-    <tr>
-      <td>{{ payment.payment_date|date:"d-m-Y" }}</td>
-      <td>Rs. {{ payment.amount_paid }}</td>
-      <td>{{ payment.get_payment_mode_display }}</td>
-      <td>
-        {% if payment.payment_status == "paid" %}
-          <span class="highlight">Paid</span>
-        {% elif payment.payment_status == "partial" %}
-          <span style="color:#fd7e14;font-weight:600;">Partial</span>
-        {% else %}
-          {{ payment.get_payment_status_display }}
-        {% endif %}
-      </td>
-    </tr>
-    {% empty %}
-    <tr>
-      <td colspan="4" class="text-center">No payments recorded.</td>
-    </tr>
-    {% endfor %}
-  </table> {% endcomment %}
 
   <div class="thanks">
     Thank you for choosing Coding Partner!

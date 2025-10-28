@@ -8,7 +8,7 @@
 
       <div class="card shadow-sm rounded mb-4">
         <h4 class="card-header bg-primary text-white">
-          Payment Receipt / Statement for {{ student.full_name }} (Reg. No: {{ student.registration_number }})
+          Payment Receipt / Statement for {{ student.full_name }} (Reg. No: {{ student.student_id }})
         </h4>
         <div class="card-body">
           {% for enrollment in enrollments %}
@@ -16,6 +16,60 @@
             <h5>
               Enrollment No: {{ enrollment.pk }} | Course: {{ enrollment.course.course_name }}
             </h5>
+
+            <!-- Fee Summary -->
+            <table class="table table-bordered mb-3" style="max-width: 600px;">
+              <thead class="table-light">
+                <tr>
+                  <th>Fee Type</th>
+                  <th>Amount</th>
+                  <th>Paid</th>
+                  <th>Remaining</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Admission Fee</strong></td>
+                  <td>₹{{ enrollment.admission_fee|floatformat:2 }}</td>
+                  <td>₹{{ enrollment.admission_fee_paid|floatformat:2 }}</td>
+                  <td>
+                    {% if enrollment.admission_fee_remaining > 0 %}
+                      <span class="text-danger">₹{{ enrollment.admission_fee_remaining|floatformat:2 }}</span>
+                    {% else %}
+                      <span class="text-success">₹0.00</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Course Fee</strong></td>
+                  <td>₹{{ enrollment.course_fee|floatformat:2 }}</td>
+                  <td>₹{{ enrollment.course_fee_paid|floatformat:2 }}</td>
+                  <td>
+                    {% if enrollment.course_fee_remaining > 0 %}
+                      <span class="text-danger">₹{{ enrollment.course_fee_remaining|floatformat:2 }}</span>
+                    {% else %}
+                      <span class="text-success">₹0.00</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                <tr class="table-primary">
+                  <td><strong>Total</strong></td>
+                  <td>₹{{ enrollment.admission_fee|add:enrollment.course_fee|floatformat:2 }}</td>
+                  <td>₹{{ enrollment.admission_fee_paid|add:enrollment.course_fee_paid|floatformat:2 }}</td>
+                  <td>
+                    {% with total_remaining=enrollment.admission_fee_remaining|add:enrollment.course_fee_remaining %}
+                      {% if total_remaining > 0 %}
+                        <span class="text-danger">₹{{ total_remaining|floatformat:2 }}</span>
+                      {% else %}
+                        <span class="text-success">₹0.00</span>
+                      {% endif %}
+                    {% endwith %}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Payments Table -->
             <table class="table table-bordered">
               <thead class="table-light">
                 <tr>
@@ -31,51 +85,39 @@
               </thead>
               <tbody>
                 {% with 0 as cumulative %}
-                {% for payment in enrollment.payments.all %}
-                <tr>
-                  <td>Payment #{{ forloop.counter }}</td>
-                  <td>{{ payment.payment_date|date:"d-m-Y" }}</td>
-                  <td>₹{{ payment.amount_paid|floatformat:2 }}</td>
-                  <td>{{ payment.get_payment_mode_display }}</td>
-                  <td>
-                    {% if payment.payment_status == "paid" %}
-                      <span class="badge bg-success">Paid</span>
-                    {% elif payment.payment_status == "partial" %}
-                      <span class="badge bg-info text-white">Partial</span>
-                    {% elif payment.payment_status == "due" %}
-                      <span class="badge bg-warning text-dark">Due</span>
-                    {% else %}
-                      <span class="badge bg-secondary">{{ payment.payment_status|capfirst }}</span>
-                    {% endif %}
-                  </td>
-                  <td>
-                    {# Cumulative paid up to this payment #}
+                {% if enrollment.payments.count > 0 %}
+                  {% for payment in enrollment.payments.all %}
                     {% with cumulative|add:payment.amount_paid as cumulative %}
-                      ₹{{ cumulative|floatformat:2 }}
+                    <tr>
+                      <td>Payment #{{ forloop.counter }}</td>
+                      <td>{{ payment.payment_date|date:"d-m-Y" }}</td>
+                      <td>₹{{ payment.amount_paid|floatformat:2 }}</td>
+                      <td>{{ payment.get_payment_mode_display }}</td>
+                      <td>
+                        {% if payment.payment_status == "paid" %}
+                          <span class="badge bg-success">Paid</span>
+                        {% elif payment.payment_status == "partial" %}
+                          <span class="badge bg-info text-white">Partial</span>
+                        {% elif payment.payment_status == "due" %}
+                          <span class="badge bg-warning text-dark">Due</span>
+                        {% else %}
+                          <span class="badge bg-secondary">{{ payment.payment_status|capfirst }}</span>
+                        {% endif %}
+                      </td>
+                      <td>₹{{ cumulative|floatformat:2 }}</td>
+                      <td>{% if forloop.last %}₹{{ enrollment.amount_due|floatformat:2 }}{% else %}-{% endif %}</td>
+                      <td>{% if forloop.last %}₹{{ enrollment.amount_remaining|floatformat:2 }}{% else %}-{% endif %}</td>
+                    </tr>
                     {% endwith %}
-                  </td>
-                  <td>
-                    {% if forloop.last %}
-                      ₹{{ enrollment.amount_due|floatformat:2 }}
-                    {% else %}
-                      -
-                    {% endif %}
-                  </td>
-                  <td>
-                    {% if forloop.last %}
-                      ₹{{ enrollment.amount_remaining|floatformat:2 }}
-                    {% else %}
-                      -
-                    {% endif %}
-                  </td>
-                </tr>
-                {% endfor %}
-                {% endwith %}
-                {% if enrollment.payments.count == 0 %}
-                <tr>
-                  <td colspan="8" class="text-center text-danger">No payments found for this enrollment.</td>
-                </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr>
+                    <td colspan="8" class="text-center text-danger">
+                      No payments found for this enrollment.
+                    </td>
+                  </tr>
                 {% endif %}
+                {% endwith %}
               </tbody>
             </table>
           </div>
@@ -85,5 +127,5 @@
         </div>
       </div>
     </div>
- 
+  
 {% endblock %}

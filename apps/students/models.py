@@ -1,12 +1,13 @@
+import re
+from decimal import Decimal
 from django.db import models
 from django.utils import timezone
 from django.db.models import Sum
-from decimal import Decimal
-from apps.courses.models import Course  # adjust if needed
+from django.core.exceptions import ValidationError
 
-# -------------------------------
-# Choices
-# -------------------------------
+from apps.courses import models as course_models
+from apps.Settings import models as setting_models
+
 
 INDIAN_STATES = [
     ('Andhra Pradesh', 'Andhra Pradesh'),
@@ -50,8 +51,12 @@ INDIAN_STATES = [
 GENDER_CHOICES = [('male', 'Male'), ('female', 'Female'), ('other', 'Other')]
 
 REFERRAL_SOURCE_CHOICES = [
-    ('instagram', 'Instagram'), ('facebook', 'Facebook'), ('friend', 'Friend'),
-    ('relative', 'Relative'), ('newspaper', 'Newspaper'), ('other', 'Other')
+    ('instagram', 'Instagram'),
+    ('facebook', 'Facebook'),
+    ('friend', 'Friend'),
+    ('relative', 'Relative'),
+    ('newspaper', 'Newspaper'),
+    ('other', 'Other'),
 ]
 
 STATUS_CHOICES = [('active', 'Active'), ('deactive', 'Deactive'), ('completed', 'Completed')]
@@ -59,17 +64,16 @@ STATUS_CHOICES = [('active', 'Active'), ('deactive', 'Deactive'), ('completed', 
 PAYMENT_METHOD_CHOICES = [
     ('one_time', 'One-Time'),
     ('monthly', 'Monthly'),
-    ('installment', 'Installment')
+    ('installment', 'Installment'),
 ]
 
 PAYMENT_MODE_CHOICES = [
-    ('cash', 'Cash'), ('card', 'Card'), ('upi', 'UPI'),
-    ('bank_transfer', 'Bank Transfer'), ('online', 'Online')
+    ('cash', 'Cash'),
+    ('card', 'Card'),
+    ('upi', 'UPI'),
+    ('bank_transfer', 'Bank Transfer'),
+    ('online', 'Online'),
 ]
-
-# -------------------------------
-# Soft Delete Mixin (for Trash)
-# -------------------------------
 
 class SoftDeleteMixin(models.Model):
     is_deleted = models.BooleanField(default=False)
@@ -78,21 +82,18 @@ class SoftDeleteMixin(models.Model):
     def delete(self, *args, **kwargs):
         self.is_deleted = True
         self.deleted_at = timezone.now()
-        self.save()
+        self.save(update_fields=['is_deleted', 'deleted_at'])
 
-    def restore(self):
+    def restore(self, *args, **kwargs):
         self.is_deleted = False
         self.deleted_at = None
-        self.save()
+        self.save(update_fields=['is_deleted', 'deleted_at'])
 
     class Meta:
         abstract = True
 
-# -------------------------------
-# Student Model
-# -------------------------------
 
-class Student(SoftDeleteMixin, models.Model):
+class Student(SoftDeleteMixin):
     student_id = models.CharField(max_length=20, primary_key=True, editable=False)
     full_name = models.CharField(max_length=200)
     father_name = models.CharField(max_length=200)
@@ -113,186 +114,207 @@ class Student(SoftDeleteMixin, models.Model):
 
     def save(self, *args, **kwargs):
         if not self.student_id:
-            last = Student.objects.order_by('-student_id').first()
-            next_id = int(last.student_id) + 1 if last and last.student_id.isdigit() else 25010001
-            self.student_id = str(next_id)
+            last_student = Student.objects.filter(student_id__regex=r'^\d+$').order_by('-student_id').first()
+            new_id = 25010001
+            if last_student and last_student.student_id.isdigit():
+                new_id = int(last_student.student_id) + 1
+            self.student_id = str(new_id)
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.full_name} ({self.student_id})"
 
-# -------------------------------
-# Student Enrollment Model
-# -------------------------------
 
-class StudentEnrollment(SoftDeleteMixin, models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, to_field='student_id', related_name='enrollments')
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+class StudentEnrollment(SoftDeleteMixin):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='enrollments')
+    course = models.ForeignKey(course_models.Course, on_delete=models.CASCADE)
     enrollment_date = models.DateField(default=timezone.now)
     due_date = models.DateField(null=True, blank=True)
+
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
 
-    # Snapshots of Student info (denormalized fields)
-    full_name = models.CharField(max_length=200, blank=True)
-    father_name = models.CharField(max_length=200, blank=True)
-    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, blank=True)
-    email = models.EmailField(blank=True)
-    dob = models.DateField(blank=True, null=True)
-    contact = models.CharField(max_length=15, blank=True)
-    emergency_contact_number = models.CharField(max_length=15, blank=True, null=True)
-    address = models.TextField(blank=True)
-    state = models.CharField(max_length=50, choices=INDIAN_STATES, blank=True)
-    city = models.CharField(max_length=100, blank=True)
-    pincode = models.CharField(max_length=6, blank=True)
-    referral_source = models.CharField(max_length=20, choices=REFERRAL_SOURCE_CHOICES, blank=True, null=True)
-    referred_by = models.ForeignKey(Student, null=True, blank=True, on_delete=models.SET_NULL, related_name='enrollments_referred')
-    referred_by_name = models.CharField(max_length=200, blank=True, null=True)
+    discount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    admission_fee = models.DecimalField(max_digits=10, decimal_places=2, default=None, null=True, blank=True)
+    final_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    amount_due = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    amount_remaining = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
 
-    # Finance fields
-    discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    final_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    amount_due = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    amount_remaining = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
-    payment_mode = models.CharField(max_length=20, choices=PAYMENT_MODE_CHOICES)
-    payment_status = models.CharField(max_length=20, choices=[
-        ('paid', 'Paid'), ('partial', 'Partial'), ('due', 'Due')
-    ], default='due')
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, blank=True, null=True)
+    payment_mode = models.CharField(max_length=20, choices=PAYMENT_MODE_CHOICES, blank=True, null=True)
+
+    payment_status = models.CharField(max_length=20,
+                                     choices=[('paid', 'Paid'), ('partial', 'Partial'), ('due', 'Due')],
+                                     default='due')
 
     total_installments = models.PositiveIntegerField(blank=True, null=True)
-    batch_time = models.TimeField(null=True, blank=True)
+    batch_time = models.TimeField(blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
-    t_id = models.CharField(max_length=20, unique=True, editable=False, blank=True, null=True)
-    certificate_number = models.CharField(max_length=20, unique=True, editable=False, blank=True, null=True)
+
+    t_id = models.CharField(max_length=20, unique=True, blank=True, null=True, editable=False)
+    certificate_number = models.CharField(max_length=20, unique=True, blank=True, null=True, editable=False)
 
     class Meta:
         unique_together = ('student', 'course')
 
     def save(self, *args, **kwargs):
-        import re
-        is_new = not self.pk
-
         if not self.enrollment_date:
             self.enrollment_date = timezone.now().date()
-
         if not self.due_date:
             self.due_date = self.enrollment_date + timezone.timedelta(days=30)
 
-        actual_fee = Decimal(getattr(self.course, 'course_fee', 0) or 0)
-        self.discount = Decimal(self.discount or 0)
-        self.final_amount = max(actual_fee - self.discount, 0)
+        # Use admission fee if set, else use default from settings
+        if self.admission_fee is None:
+            setting = setting_models.Setting.objects.first()
+            self.admission_fee = setting.admission_fee if setting else Decimal('0.00')
 
-        paid = self.amount_paid
-        remaining = max(self.final_amount - paid, 0)
-        self.amount_remaining = remaining
+        course_fee = getattr(self.course, 'course_fee', Decimal('0.00')) or Decimal('0.00')
+        self.discount = self.discount or Decimal('0.00')
+        discounted_course_fee = max(course_fee - self.discount, Decimal('0.00'))
+
+        # Calculate final amount accurately
+        self.final_amount = self.admission_fee + discounted_course_fee
+
+        # Recalculate payment totals from payments, or zero without pk
+        paid_admission_fee = self.admission_fee_paid if self.pk else Decimal('0.00')
+        paid_course_fee = self.course_fee_paid if self.pk else Decimal('0.00')
+
+        remaining_admission_fee = max(self.admission_fee - paid_admission_fee, Decimal('0.00'))
+        remaining_course_fee = max(discounted_course_fee - paid_course_fee, Decimal('0.00'))
+
+        self.amount_remaining = remaining_admission_fee + remaining_course_fee
+
+        duration = getattr(self.course, 'course_duration', None) or 1
 
         if self.payment_method == 'installment' and self.total_installments:
-            per = self.final_amount / Decimal(self.total_installments)
-        elif self.payment_method == 'monthly' and getattr(self.course, 'course_duration', None):
-            duration = self.course.course_duration or 1
-            per = self.final_amount / Decimal(duration)
+            per_due = discounted_course_fee / Decimal(self.total_installments)
+        elif self.payment_method == 'monthly' and duration:
+            per_due = discounted_course_fee / Decimal(duration)
         else:
-            per = self.final_amount
+            per_due = discounted_course_fee
 
-        self.amount_due = 0 if paid >= self.final_amount else min(per, remaining)
+        self.amount_due = Decimal('0.00') if paid_course_fee >= discounted_course_fee else min(per_due, remaining_course_fee)
 
-        if remaining <= 0:
+        if self.amount_remaining == Decimal('0.00'):
             self.payment_status = 'paid'
-        elif paid > 0:
+        elif paid_admission_fee > Decimal('0.00') or paid_course_fee > Decimal('0.00'):
             self.payment_status = 'partial'
         else:
             self.payment_status = 'due'
 
-        if is_new and not self.full_name and self.student:
-            s = self.student
-            self.full_name = s.full_name
-            self.father_name = s.father_name
-            self.gender = s.gender
-            self.email = s.email
-            self.dob = s.dob
-            self.contact = s.contact
-            self.emergency_contact_number = s.emergency_contact_number
-            self.address = s.address
-            self.state = s.state
-            self.city = s.city
-            self.pincode = s.pincode
-            self.referral_source = s.referral_source
-            self.referred_by = s.referred_by
-            self.referred_by_name = s.referred_by_name
-
+        # Generate unique t_id if missing
         if not self.t_id:
-            last = StudentEnrollment.objects.exclude(t_id__isnull=True).exclude(t_id='').order_by('-id').first()
-            next_number = 1
-            if last and last.t_id and last.t_id[1:].isdigit():
-                next_number = int(last.t_id[1:]) + 1
-            self.t_id = f"E{next_number:04d}"
+            last_enrollment = StudentEnrollment.objects.filter(t_id__isnull=False).exclude(t_id='').order_by('-id').first()
+            next_id = 1
+            if last_enrollment and last_enrollment.t_id and last_enrollment.t_id[1:].isdigit():
+                next_id = int(last_enrollment.t_id[1:]) + 1
+            self.t_id = f"E{next_id:04d}"
 
+        # Generate certificate_number if missing
         if not self.certificate_number:
             last_cert = StudentEnrollment.objects.exclude(certificate_number__isnull=True).exclude(certificate_number='').order_by('-id').first()
             next_cert_num = 1
-            if last_cert and last_cert.certificate_number:
-                m = re.search(r'CP-CN-(\d+)', last_cert.certificate_number)
-                if m:
-                    next_cert_num = int(m.group(1)) + 1
+            if last_cert:
+                match = re.search(r"CP-CN-(\d+)", last_cert.certificate_number)
+                if match:
+                    next_cert_num = int(match.group(1)) + 1
             self.certificate_number = f"CP-CN-{next_cert_num:03d}"
 
         super().save(*args, **kwargs)
 
     @property
-    def amount_paid(self):
+    def admission_fee_paid(self):
+        total = self.payments.filter(remarks__iexact='Admission Fee').aggregate(total=Sum('amount_paid'))['total']
+        return Decimal(total or 0)
+
+    @property
+    def course_fee_paid(self):
+        total = self.payments.filter(remarks__iexact='Course Fee').aggregate(total=Sum('amount_paid'))['total']
+        return Decimal(total or 0)
+
+    @property
+    def admission_fee_remaining(self):
+        rem = self.admission_fee - self.admission_fee_paid
+        return rem if rem > Decimal('0.00') else Decimal('0.00')
+
+    @property
+    def course_fee_remaining(self):
+        course_fee = getattr(self.course, 'course_fee', Decimal('0.00')) or Decimal('0.00')
+        rem = max(course_fee - self.discount - self.course_fee_paid, Decimal('0.00'))
+        return rem
+
+    @property
+    def total_amount_paid(self):
+        total = self.admission_fee_paid + self.course_fee_paid
+        return total if total > Decimal('0.00') else Decimal('0.00')
+
+    @property
+    def total_amount_remaining(self):
+        remaining = self.final_amount - self.total_amount_paid
+        return remaining if remaining > Decimal('0.00') else Decimal('0.00')
+
+    def apply_initial_payment(self, initial_payment: Decimal, payment_mode='cash'):
         if not self.pk:
-            return Decimal('0.00')
-        result = self.payments.aggregate(total=Sum('amount_paid'))
-        return Decimal(result['total'] or 0)
+            raise ValidationError("Save enrollment before processing payments.")
 
-    def delete(self, *args, **kwargs):
-        # Soft delete this enrollment
-        self.is_deleted = True
-        self.deleted_at = timezone.now()
-        super().save(update_fields=['is_deleted', 'deleted_at'])
+        payments_created = []
+        remaining_payment = initial_payment
 
-        # After soft-deleting this enrollment, check if all of the student's enrollments are deleted
-        active_enrollments_count = StudentEnrollment.objects.filter(
-            student=self.student,
-            is_deleted=False
-        ).count()
-        if active_enrollments_count == 0:
-            # Soft-delete the student
-            self.student.is_deleted = True
-            self.student.deleted_at = timezone.now()
-            self.student.save(update_fields=['is_deleted', 'deleted_at'])
+        admission_due = self.admission_fee_remaining
+        if admission_due > Decimal('0.00'):
+            pay_amount = min(remaining_payment, admission_due)
+            p = Payment.objects.create(
+                enrollment=self,
+                amount=admission_due,
+                amount_paid=pay_amount,
+                payment_mode=payment_mode,
+                payment_status='paid' if pay_amount >= admission_due else 'partial',
+                remarks='Admission Fee',
+                payment_date=timezone.now().date(),
+            )
+            payments_created.append(p)
+            remaining_payment -= pay_amount
 
-    def restore(self):
-        # Restore this enrollment
-        self.is_deleted = False
-        self.deleted_at = None
-        super().save(update_fields=['is_deleted', 'deleted_at'])
+        course_due = self.course_fee_remaining
+        if remaining_payment > Decimal('0.00') and course_due > Decimal('0.00'):
+            pay_amount = min(remaining_payment, course_due)
+            p = Payment.objects.create(
+                enrollment=self,
+                amount=course_due,
+                amount_paid=pay_amount,
+                payment_mode=payment_mode,
+                payment_status='paid' if pay_amount >= course_due else 'partial',
+                remarks='Course Fee',
+                payment_date=timezone.now().date(),
+            )
+            payments_created.append(p)
+            remaining_payment -= pay_amount
 
-        # If student is deleted, restore student as well
-        if self.student.is_deleted:
-            self.student.is_deleted = False
-            self.student.deleted_at = None
-            self.student.save(update_fields=['is_deleted', 'deleted_at'])
+        self.refresh_from_db()
+        self.save(update_fields=['payment_status', 'amount_due', 'amount_remaining'])
+
+        return payments_created
 
     def __str__(self):
-        return f"[{self.t_id}] {self.student.full_name} - {self.course.course_name}"
+        return f"{self.student.full_name} ({self.student.student_id}) - {self.course.course_name}"
 
-# -------------------------------
-# Payment Model
-# -------------------------------
 
 class Payment(models.Model):
     enrollment = models.ForeignKey(StudentEnrollment, on_delete=models.CASCADE, related_name='payments')
-    payment_date = models.DateField(default=timezone.now)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2)
     payment_mode = models.CharField(max_length=20, choices=PAYMENT_MODE_CHOICES)
-    payment_status = models.CharField(max_length=20, choices=[
-        ('paid', 'Paid'), ('partial', 'Partial'), ('due', 'Due')
-    ], default='partial')
+    payment_status = models.CharField(max_length=20,
+                                      choices=[('paid', 'Paid'), ('partial', 'Partial'), ('due', 'Due')],
+                                      default='due')
+    remarks = models.CharField(max_length=255, blank=True, null=True)  # 'Admission Fee' or 'Course Fee'
+    payment_date = models.DateField(default=timezone.now)
 
     def save(self, *args, **kwargs):
+        if self.remarks:
+            self.remarks = self.remarks.strip()
         super().save(*args, **kwargs)
-        self.enrollment.save()  # To update enrollment aggregates when payment is saved
+        # After saving payment, update enrollment's payment status and amounts
+        self.enrollment.save()
 
     def __str__(self):
-        return f"₹{self.amount_paid} on {self.payment_date}"
+        return f"{self.payment_date} - {self.enrollment.student.full_name} - ₹{self.amount_paid} ({self.remarks or 'Unknown'})"

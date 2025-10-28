@@ -13,6 +13,7 @@ urlpatterns = [
     path('login/', views.custom_login, name='login'),
     path('logout/', views.custom_logout, name='logout'),
     path('enqueries/', include('apps.Enquiries.urls')),  # Ensure this matches the folder name
+    path('settings/', include('apps.Settings.urls')),  # Ensure this matches the folder name
 ]
 
 if settings.DEBUG:

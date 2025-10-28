@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'apps.Teams',
     'apps.Expenses',
     'apps.Enquiries',  # Ensure this is lowercase to match the folder name
+    'apps.Settings',  # Ensure this is lowercase to match the folder name
 ]
 
 MIDDLEWARE = [
@@ -83,7 +84,7 @@ WSGI_APPLICATION = 'Institute_Management.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'cde_db',
+        'NAME': 'xyz_db',
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'localhost',

@@ -1,5 +1,6 @@
 {% extends 'm.html' %}
 {% load static %}
+
 {% block content %}
 
 <style>
@@ -41,108 +42,76 @@
 
 <div class="container-xxl flex-grow-1 container-p-y">
 
-  <!-- Month Filter Bar -->
-  <form method="get" action="{% url 'payment_summary' %}" class="dashboard-search-bar">
-    <input 
-      type="month" 
-      name="month" 
-      value="{{ selected_month|default:'' }}" 
-      class="form-control" 
+  <!-- Month Filter -->
+  <form method="get" action="{% url 'payment_summary' %}" class="dashboard-search-bar" aria-label="Filter payments by month">
+    <input
+      type="month"
+      name="month"
+      value="{{ selected_month|default:'' }}"
+      class="form-control"
       style="flex:1; min-width:160px;"
+      aria-label="Select Month"
     >
-    <button type="submit" class="btn btn-primary">Apply</button>
+    <button type="submit" class="btn btn-primary" aria-label="Apply filter">Apply</button>
     {% if selected_month %}
-      <a href="{% url 'payment_summary' %}" class="btn btn-secondary" style="white-space:nowrap;">Clear</a>
+      <a href="{% url 'payment_summary' %}" class="btn btn-secondary" aria-label="Clear month filter" style="white-space:nowrap;">Clear</a>
     {% endif %}
   </form>
 
-  <!-- Total Collected Card -->
+  <!-- Total Collected -->
   <div class="row dashboard-summary-cards mb-4 text-center">
     <div class="col-md-4 offset-md-4 mb-3">
-      <div class="card shadow-sm bg-success text-white">
+      <div class="card shadow-sm bg-success text-white" role="region" aria-label="Total collected payment">
         <div class="card-body">
-          <span class="icon"><i class="fas fa-wallet"></i></span>
+          <span class="icon" aria-hidden="true"><i class="fas fa-wallet"></i></span>
           <h5>Total Collected</h5>
-          <p class="fs-4 mb-0">₹{{ total_payment_collected|floatformat:2 }}</p>
+        
+<p class="fs-4 mb-0" aria-live="polite" aria-atomic="true">₹{{ total_collected|floatformat:2 }}</p>
+
+
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Mini Cards for Payment Methods/Modes (as before) -->
-  <!-- ... (keep your mini cards code) ... -->
+  <!-- Payments grouped by student -->
+  {% regroup payments by enrollment.student as student_groups %}
 
-  <!-- Toggle Button -->
-  <div class="text-end mb-3">
-    <button id="toggle-view-btn" class="btn btn-outline-primary">
-      Show Monthly Expenses
-    </button>
-  </div>
-
-  <!-- Payment Table Filters -->
-  <form method="get" action="{% url 'payment_summary' %}" class="dashboard-search-bar" style="margin-bottom:1rem;" id="payments-filter-bar">
-    <input type="hidden" name="month" value="{{ selected_month|default:'' }}">
-    <select name="payment_method" class="form-select" style="flex:1; min-width:160px;">
-      <option value="">All Methods</option>
-      {% for method in payment_methods %}
-        <option value="{{ method.enrollment__payment_method }}" {% if method.enrollment__payment_method == pay_method %}selected{% endif %}>{{ method.enrollment__payment_method|capfirst }}</option>
-      {% endfor %}
-    </select>
-    <select name="payment_mode" class="form-select" style="flex:1; min-width:160px;">
-      <option value="">All Modes</option>
-      {% for mode in payment_modes %}
-        <option value="{{ mode.payment_mode }}" {% if mode.payment_mode == pay_mode %}selected{% endif %}>{{ mode.payment_mode|capfirst }}</option>
-      {% endfor %}
-    </select>
-    <input 
-      type="text" 
-      name="search" 
-      placeholder="Search student, course, payment mode..." 
-      value="{{ pay_search|default:'' }}" 
-      class="form-control" 
-      style="flex:2; min-width:200px;"
-      autocomplete="off"
-    >
-    <button type="submit" class="btn btn-primary">Filter</button>
-    {% if pay_search or pay_method or pay_mode %}
-      <a href="{% url 'payment_summary' %}?month={{ selected_month|default:'' }}" class="btn btn-secondary" style="white-space:nowrap;">Clear</a>
-    {% endif %}
-  </form>
-
-  <!-- Payment Transactions Table -->
-  <div id="payments-table-section">
-    <div class="card shadow-sm mb-4">
-      <div class="card-header bg-primary text-white text-center">
-        <h4 class="mb-0">Payment Transactions{% if selected_month %} ({{ selected_month }}){% endif %}</h4>
-      </div>
-      <div class="table-responsive">
-        <table class="table dashboard-table table-bordered mb-0">
-          <thead class="table-light">
+  {% for student_group in student_groups %}
+    {% with student=student_group.grouper %}
+      <article class="card shadow-sm mb-4" aria-labelledby="student-{{ student.student_id }}" role="region">
+        <header class="card-header bg-primary text-white">
+          <h5 id="student-{{ student.student_id }}" class="mb-0">
+            Student: {{ student.full_name }} (Reg. No: {{ student.student_id }})
+          </h5>
+        </header>
+        <section class="card-body">
+          {% regroup student_group.list by enrollment as enrollment_groups %}
+         {% for enrollment_group in enrollment_groups %}
+  {% with enrollment=enrollment_group.grouper %}
+    <section class="mb-4 border rounded p-3" aria-labelledby="enrollment-{{ enrollment.pk }}">
+      <h6>
+        Enrollment: {{ enrollment.t_id }} | Date: <time datetime="{{ enrollment.enrollment_date|date:"Y-m-d" }}">{{ enrollment.enrollment_date|date:"d-m-Y" }}</time>
+      </h6>
+      <!-- Payments List -->
+      <table class="table table-striped table-bordered" role="table" aria-label="Payment list for enrollment {{ enrollment.t_id }}">
+        <thead class="table-light">
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Payment Date</th>
+            <th scope="col">Amount (₹)</th>
+            <th scope="col">Payment Mode</th>
+            <th scope="col">Status</th>
+            <th scope="col">Remarks</th>
+            <th scope="col">Receipt</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for payment in enrollment_group.list %}
             <tr>
-              <th>SR No.</th>
-              <th>Registration No.</th>
-              <th>Student</th>
-              <th>Enrollment No.</th>
-              <th>Course</th>
-              <th>Payment Date</th>
-              <th>Amount Paid</th>
-              <th>Payment Mode</th>
-              <th>Status</th>
-              <th>Receipt</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for payment in payments %}
-            <tr>
-              <td>{{ forloop.counter }}</td>
-              <td>
-                {{ payment.enrollment.student.student_id|default:"-" }}
-              </td>
-              <td>{{ payment.enrollment.student.full_name }}</td>
-              <td>{{ payment.enrollment.enrollment_id|default:payment.enrollment.id }}</td>
-              <td>{{ payment.enrollment.course.course_name }}</td>
-              <td>{{ payment.payment_date|date:"d-m-Y" }}</td>
-              <td>₹{{ payment.amount_paid|floatformat:2 }}</td>
+              <th scope="row">{{ forloop.counter }}</th>
+              <td>{{ enrollment.enrollment_date|date:"Y-m-d" }}</td>
+              <td>{{ payment.amount_paid|floatformat:2 }}</td>
               <td>{{ payment.get_payment_mode_display }}</td>
               <td>
                 {% if payment.payment_status == "paid" %}
@@ -155,84 +124,90 @@
                   <span class="badge bg-secondary">{{ payment.payment_status|capfirst }}</span>
                 {% endif %}
               </td>
+              <td>{{ payment.remarks|default:"Course Fee" }}</td>
               <td>
-                <a href="{% url 'download_payment_receipt' payment.id %}" class="btn btn-success btn-sm" title="Download Payment Receipt">
+                <a href="{% url 'download_payment_receipt' payment.id %}" class="btn btn-success btn-sm" aria-label="Download payment receipt" title="Download Receipt">
                   <i class="fas fa-download"></i>
                 </a>
               </td>
             </tr>
-            {% empty %}
+          {% empty %}
             <tr>
-              <td colspan="10" class="text-center text-danger py-4">
-                <i class="fas fa-exclamation-circle fa-2x mb-2"></i><br>
-                No payment records found for this month.
-              </td>
+              <td colspan="7" class="text-center text-warning">No payments found.</td>
             </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div> 
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  {% endwith %}
+{% endfor %}
 
-  <!-- Expenses Table (hidden by default) -->
-  <div id="expenses-table-section" style="display:none;">
-    <div class="card shadow-sm mb-4">
-      <div class="card-header bg-danger text-white text-center">
-        <h4 class="mb-0">Monthly Expenses{% if selected_month %} ({{ selected_month }}){% endif %}</h4>
-      </div>
+        </section>
+      </article>
+    {% endwith %}
+  {% endfor %}
+
+  <!-- Toggle Button -->
+  <div class="text-end my-3">
+    <button id="toggle-btn" class="btn btn-outline-primary" aria-pressed="false" aria-controls="expenses-section">
+      Show Monthly Expenses
+    </button>
+  </div>
+
+  <!-- Expenses Section -->
+  <section id="expenses-section" style="display:none;" aria-hidden="true" role="region" aria-label="Monthly Expenses">
+    <div class="card shadow-sm">
+      <header class="card-header bg-danger text-white text-center">
+        <h4>Monthly Expenses{% if selected_month %} ({{ selected_month }}){% endif %}</h4>
+      </header>
       <div class="table-responsive">
-        <table class="table dashboard-table table-bordered mb-0">
+        <table class="table table-bordered">
           <thead class="table-light">
             <tr>
-              <th>Date</th>
-              <th>Expense Name</th>
-              <th>Expense By</th>
-              <th>Amount</th>
-              <th>Remarks</th>
+              <th>Date</th><th>Expense Name</th><th>Expense By</th><th>Amount (₹)</th><th>Remarks</th>
             </tr>
           </thead>
           <tbody>
             {% for expense in expenses %}
-            <tr>
-              <td>{{ expense.date|date:"d-m-Y" }}</td>
-              <td>{{ expense.expense_name }}</td>
-              <td>{{ expense.expense_by.name }}</td>
-              <td>₹{{ expense.amount|floatformat:2 }}</td>
-              <td>{{ expense.remarks }}</td>
-            </tr>
+              <tr>
+                <td>{{ expense.date|date:"d-m-Y" }}</td>
+                <td>{{ expense.expense_name }}</td>
+                <td>{{ expense.expense_by.name }}</td>
+                <td>{{ expense.amount|floatformat:2 }}</td>
+                <td>{{ expense.remarks }}</td>
+              </tr>
             {% empty %}
-            <tr>
-              <td colspan="5" class="text-center text-danger py-4">
-                <i class="fas fa-exclamation-circle fa-2x mb-2"></i><br>
-                No expenses recorded for this month.
-              </td>
-            </tr>
+              <tr>
+                <td colspan="5" class="text-center text-danger py-4">
+                  <i class="fas fa-exclamation-circle fa-2x" aria-hidden="true"></i><br>
+                  No expenses recorded.
+                </td>
+              </tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
-   
+  
+  </section>
 
 <script>
-  const toggleBtn = document.getElementById('toggle-view-btn');
-  const paymentsSection = document.getElementById('payments-table-section');
-  const paymentsFilterBar = document.getElementById('payments-filter-bar');
-  const expensesSection = document.getElementById('expenses-table-section');
+  const toggleBtn = document.getElementById('toggle-btn');
+  const paymentsSection = document.querySelector('.dashboard-summary-cards');
+  const expensesSection = document.getElementById('expenses-section');
   let showingPayments = true;
 
-  toggleBtn.addEventListener('click', function() {
+  toggleBtn.addEventListener('click', () => {
     showingPayments = !showingPayments;
     if (showingPayments) {
-      paymentsSection.style.display = '';
-      paymentsFilterBar.style.display = '';
+      paymentsSection.style.display = 'block';
       expensesSection.style.display = 'none';
       toggleBtn.textContent = 'Show Monthly Expenses';
+      toggleBtn.setAttribute('aria-pressed', 'true');
     } else {
       paymentsSection.style.display = 'none';
-      paymentsFilterBar.style.display = 'none';
-      expensesSection.style.display = '';
+      expensesSection.style.display = 'block';
       toggleBtn.textContent = 'Show Monthly Payments';
+      toggleBtn.setAttribute('aria-pressed', 'false');
     }
   });
 </script>

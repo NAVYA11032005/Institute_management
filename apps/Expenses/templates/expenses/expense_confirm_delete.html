@@ -1,0 +1,29 @@
+{% extends 'm.html' %}
+{% load static %}
+
+{% block title %}Confirm Expense Delete{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Confirm Expense Deletion</h2>
+    <p>Are you sure you want to move this expense to trash? This action can be undone by restoring it later.</p>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">{{ expense.expense_name }}</h5>
+            <p><strong>Expense By:</strong> {{ expense.expense_by.name }}</p>
+            <p><strong>Amount:</strong> ₹{{ expense.amount|floatformat:2 }}</p>
+            <p><strong>Date:</strong> {{ expense.date|date:"d-m-Y" }}</p>
+            {% if expense.remarks %}
+                <p><strong>Remarks:</strong> {{ expense.remarks }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <form method="post" action="">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Confirm Delete</button>
+        <a href="{% url 'expense_list' %}" class="btn btn-secondary ms-2">Cancel</a>
+    </form>
+
+{% endblock %}

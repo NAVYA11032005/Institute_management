@@ -7,24 +7,23 @@ import re
 
 from .models import Student, StudentEnrollment, Payment
 
-
 class PaymentInline(admin.TabularInline):
     model = Payment
     extra = 0
     fields = ('payment_date', 'amount_paid', 'payment_mode', 'payment_status')
     readonly_fields = ('payment_date',)
 
-
 @admin.register(StudentEnrollment)
 class StudentEnrollmentAdmin(admin.ModelAdmin):
     list_display = (
-        't_id',  # Changed from 'enrollment_id' to 't_id'
+        't_id',  # Enrollment transaction ID
         'get_full_name', 'get_father_name', 'get_gender', 'get_email', 'get_contact',
-        'get_emergency_contact_number', 'course', 'get_city', 'get_state',
+        'get_emergency_contact',
+        'get_city', 'get_state',
         'amount_paid', 'amount_due', 'amount_remaining', 'get_payment_status',
         'batch_time', 'get_referred_by_display', 'get_referral_source_display',
-        'get_payment_method_display', 'get_payment_mode_display', 'enrollment_date', 'due_date', 'status',
-        'view_certificate_link',  # Link column for viewing certificate
+        'get_payment_method', 'get_payment_mode', 'enrollment_date', 'due_date', 'status',
+        'view_certificate_link',
     )
     list_filter = (
         'course', 'status', 'payment_status', 'batch_time', 'payment_method', 'payment_mode'
@@ -34,7 +33,7 @@ class StudentEnrollmentAdmin(admin.ModelAdmin):
     )
     inlines = [PaymentInline]
 
-    # Display methods for related student info
+    # Related student fields display methods
     def get_full_name(self, obj):
         return obj.student.full_name
     get_full_name.short_description = "Full Name"
@@ -60,9 +59,9 @@ class StudentEnrollmentAdmin(admin.ModelAdmin):
     get_contact.short_description = "Contact"
     get_contact.admin_order_field = 'student__contact'
 
-    def get_emergency_contact_number(self, obj):
+    def get_emergency_contact(self, obj):
         return obj.student.emergency_contact_number
-    get_emergency_contact_number.short_description = "Emergency Contact"
+    get_emergency_contact.short_description = "Emergency Contact"
 
     def get_city(self, obj):
         return obj.student.city
@@ -75,32 +74,30 @@ class StudentEnrollmentAdmin(admin.ModelAdmin):
     get_state.admin_order_field = 'student__state'
 
     def get_referred_by_display(self, obj):
-        # Return the full name of the referred_by if set; else fallback to referred_by_name
         if obj.referred_by:
             return obj.referred_by.full_name
-        return obj.referred_by_name or "-"
+        return obj.referred_by_name
     get_referred_by_display.short_description = "Referred By"
 
     def get_referral_source_display(self, obj):
         return obj.get_referral_source_display()
     get_referral_source_display.short_description = "Referral Source"
 
-    def get_payment_method_display(self, obj):
+    def get_payment_method(self, obj):
         return obj.get_payment_method_display()
-    get_payment_method_display.short_description = "Payment Method"
+    get_payment_method.short_description = "Payment Method"
 
-    def get_payment_mode_display(self, obj):
+    def get_payment_mode(self, obj):
         return obj.get_payment_mode_display()
-    get_payment_mode_display.short_description = "Payment Mode"
+    get_payment_mode.short_description = "Payment Mode"
 
     def get_payment_status(self, obj):
-        status_map = {'paid': 'Paid', 'partial': 'Partial', 'due': 'Due'}
-        return status_map.get(obj.payment_status, obj.payment_status)
+        return obj.get_payment_status_display()
     get_payment_status.short_description = "Payment Status"
 
     def amount_paid(self, obj):
-        return obj.amount_paid
-    amount_paid.short_description = "Paid"
+        return obj.course_fee_paid + obj.admission_fee_paid
+    amount_paid.short_description = "Total Paid"
 
     def amount_due(self, obj):
         return obj.amount_due
@@ -110,59 +107,15 @@ class StudentEnrollmentAdmin(admin.ModelAdmin):
         return obj.amount_remaining
     amount_remaining.short_description = "Remaining"
 
-    # Custom column: View Certificate link
     def view_certificate_link(self, obj):
-        url = f"{obj.pk}/view-certificate/"
-        return format_html('<a class="button" href="{}">View Certificate</a>', url)
-    view_certificate_link.short_description = 'Certificate'
-
-    # Add custom admin url for view certificate
-    def get_urls(self):
-        urls = super().get_urls()
-        custom_urls = [
-            path(
-                '<int:enrollment_id>/view-certificate/',
-                self.admin_site.admin_view(self.view_certificate),
-                name='studentenrollment_view_certificate',
-            ),
-        ]
-        return custom_urls + urls
-
-    def view_certificate(self, request, enrollment_id):
-        enrollment = get_object_or_404(StudentEnrollment, pk=enrollment_id)
-
-        # Generate certificate_number if it doesn't exist
-        if not enrollment.certificate_number:
-            last_cert = (
-                StudentEnrollment.objects
-                .exclude(certificate_number__isnull=True)
-                .exclude(certificate_number='')
-                .order_by('-id')
-                .first()
-            )
-            next_cert_num = 1
-            if last_cert and last_cert.certificate_number:
-                match = re.search(r'CP-CN-(\d+)', last_cert.certificate_number)
-                if match:
-                    next_cert_num = int(match.group(1)) + 1
-            enrollment.certificate_number = f"CP-CN-{next_cert_num:03d}"
-            enrollment.save()
-
-        # Render a simple HTML response for the certificate; you can replace this by more advanced rendering
-        return HttpResponse(
-            f"<h1>Certificate for Enrollment {enrollment.t_id}</h1>"
-            f"<p><strong>Certificate Number:</strong> {enrollment.certificate_number}</p>"
-            f"<p><strong>Student:</strong> {enrollment.student.full_name}</p>"
-            f"<p><strong>Course:</strong> {enrollment.course.course_name}</p>"
-            f"<p><strong>Enrollment Date:</strong> {enrollment.enrollment_date}</p>"
-        )
-
+        url = f"{obj.pk}/certificate"
+        return format_html('<a href="{}" target="_blank">View Certificate</a>', url)
+    view_certificate_link.short_description = "Certificate"
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
-    list_display = ('student_id', 'full_name', 'father_name', 'gender', 'email', 'contact', 'state', 'city')
+    list_display = ('student_id', 'full_name', 'father_name', 'gender', 'email', 'contact', 'state')
     search_fields = ('student_id', 'full_name', 'father_name', 'email', 'contact')
-
 
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):

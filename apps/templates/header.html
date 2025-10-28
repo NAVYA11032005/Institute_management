@@ -149,13 +149,25 @@
                     </a>
                 </li>
 
+
+<!-- Setting App -->
+<li class="menu-item {% if sidebar_active == 'setting' %}active{% endif %}">
+    <a href="{% url 'setting_edit' %}" class="menu-link">
+        <i class="menu-icon bx bx-cog"></i>
+        <div class="text-truncate">Settings</div>
+    </a>
+</li>
+
+<!-- Logout -->
+<li class="menu-item">
+    <a href="{% url 'logout' %}" class="menu-link" style="color: #dc3545;">
+        <i class="menu-icon bx bx-log-out"></i>
+        <div class="text-truncate">Logout</div>
+    </a>
+</li>
+
                 <!-- Logout -->
-                <li class="menu-item">
-                    <a href="{% url 'logout' %}" class="menu-link" style="color: #dc3545;">
-                        <i class="menu-icon bx bx-log-out"></i>
-                        <div class="text-truncate">Logout</div>
-                    </a>
-                </li>
+                
             </ul>
         </aside>
         <!-- / Sidebar Menu -->

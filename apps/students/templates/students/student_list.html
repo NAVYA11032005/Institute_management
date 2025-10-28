@@ -2,26 +2,51 @@
 {% load static %}
 {% block content %}
 
-<!-- FontAwesome for icons -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
 
 <style>
-  .toggle-btn { margin-bottom: 16px; }
-  .table th, .table td { vertical-align: middle; text-align: center; }
+  .toggle-btn {
+    margin-bottom: 16px;
+  }
+  .table th,
+  .table td {
+    vertical-align: middle;
+    text-align: center;
+  }
   .side-panel {
-    position: fixed; top: 0; right: -100%;
-    width: 375px; height: 100%;
-    background: #fff; box-shadow: -3px 0 10px rgba(0,0,0,0.16);
-    transition: right 0.3s; z-index: 1055; overflow-y: auto;
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 375px;
+    height: 100%;
+    background: #fff;
+    box-shadow: -3px 0 10px rgba(0, 0, 0, 0.16);
+    transition: right 0.3s;
+    z-index: 1055;
+    overflow-y: auto;
   }
-  .side-panel.open { right: 0; }
+  .side-panel.open {
+    right: 0;
+  }
   .side-panel-header {
-    background: #4b49ac; color: #fff; padding: 16px;
-    font-size: 1.4rem; text-align: center;
+    background: #4b49ac;
+    color: #fff;
+    padding: 16px;
+    font-size: 1.4rem;
+    text-align: center;
   }
-  .side-panel-body { padding: 20px; }
+  .side-panel-body {
+    padding: 20px;
+  }
   .side-panel-footer {
-    padding: 12px 20px; border-top: 1px solid #eee; text-align: right;
+    padding: 12px 20px;
+    border-top: 1px solid #eee;
+    text-align: right;
+  }
+
+  /* Hide server-side pagination nav to avoid confusion */
+  nav[aria-label="Enrollment pagination"] {
+    display: none;
   }
 </style>
 
@@ -34,18 +59,19 @@
         <i class="fas fa-plus-circle"></i> Add Student
       </a>
     </div>
+
     <div class="col-auto">
-      <form method="get" class="d-inline">
+      <form method="get" class="d-inline" role="search" aria-label="Sort enrollments">
         <label for="orderSelect" class="visually-hidden">Sort Order</label>
-        <select name="order" id="orderSelect" class="form-select d-inline w-auto" onchange="this.form.submit()">
+        <select name="order" id="orderSelect" class="form-select d-inline w-auto" onchange="this.form.submit()" aria-live="polite" aria-atomic="true">
           <option value="desc" {% if order == 'desc' %}selected{% endif %}>Latest First</option>
           <option value="asc" {% if order == 'asc' %}selected{% endif %}>Oldest First</option>
         </select>
       </form>
     </div>
+
     <div class="col-auto ms-auto">
-      <!-- Pending Dues Toggle Button -->
-      <button id="togglePendingDuesBtn" class="btn btn-outline-danger toggle-btn" type="button" aria-pressed="false" aria-controls="pendingDuesSection">
+      <button id="togglePendingDuesBtn" class="btn btn-outline-danger toggle-btn" type="button" aria-pressed="false" aria-controls="pendingDuesSection" aria-expanded="false">
         <i class="fas fa-exclamation-circle"></i> View Pending Dues
       </button>
     </div>
@@ -54,10 +80,11 @@
   <!-- Pending Dues Table (Initially Hidden) -->
   <section id="pendingDuesSection" style="display:none;" aria-hidden="true" tabindex="-1">
     <h5 class="text-danger mb-2">
-      <i class="fas fa-exclamation-triangle"></i> Pending Dues
+      <i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Pending Dues
     </h5>
     <div class="table-responsive mb-4">
-      <table class="table table-bordered table-hover shadow-sm bg-light">
+      <table class="table table-bordered table-hover shadow-sm bg-light" role="table" aria-describedby="pendingDuesCaption">
+        <caption id="pendingDuesCaption" class="visually-hidden">List of students with pending dues</caption>
         <thead class="table-dark">
           <tr>
             <th scope="col">#</th>
@@ -79,23 +106,30 @@
               <div class="text-muted small">{{ e.student.father_name }}</div>
             </td>
             <td>{{ e.course.course_name }}</td>
-            <td>{{ e.student.email }}</td>
-            <td>{{ e.student.contact }}</td>
-            <td><span class="badge bg-warning">₹{{ e.amount_remaining|floatformat:2 }}</span></td>
+            <td><a href="mailto:{{ e.student.email }}">{{ e.student.email }}</a></td>
+            <td><a href="tel:{{ e.student.contact }}">{{ e.student.contact }}</a></td>
+            <td><span class="badge bg-warning" aria-label="Amount remaining">₹{{ e.amount_remaining|floatformat:2 }}</span></td>
             <td>
               {% if e.payment_status == "due" %}
-                <span class="badge bg-danger">Due</span>
+              <span class="badge bg-danger" aria-label="Payment status: Due">Due</span>
               {% elif e.payment_status == "partial" %}
-                <span class="badge bg-info text-dark">Partial</span>
+              <span class="badge bg-info text-dark" aria-label="Payment status: Partial">Partial</span>
               {% else %}
-                <span class="badge bg-success">Paid</span>
+              <span class="badge bg-success" aria-label="Payment status: Paid">Paid</span>
               {% endif %}
             </td>
             <td>
               <div class="btn-group" role="group" aria-label="Actions">
                 <button type="button" class="btn btn-sm btn-warning" title="Add Payment"
-                  onclick="openSidePanel('{{ e.pk }}', '{{ e.amount_paid }}', '{{ e.amount_due }}', '{{ e.amount_remaining }}')">
+                  onclick="openSidePanel(
+                    '{{ e.pk }}',
+                    '{{ e.admission_fee_paid|floatformat:2 }}',
+                    '{{ e.course_fee_paid|floatformat:2 }}',
+                    '{{ e.amount_due|floatformat:2 }}',
+                    '{{ e.amount_remaining|floatformat:2 }}')"
+                >
                   <i class="fas fa-rupee-sign"></i>
+                  <span class="visually-hidden">Add payment</span>
                 </button>
               </div>
             </td>
@@ -113,14 +147,16 @@
   <!-- All Enrollments Table -->
   <h5 class="mb-2 text-secondary"><i class="fas fa-users"></i> All Enrollments</h5>
   <div class="table-responsive">
-    <table class="table table-bordered table-hover bg-white">
+    <table class="table table-bordered table-hover bg-white" role="table" aria-describedby="allEnrollmentsCaption">
+      <caption id="allEnrollmentsCaption" class="visually-hidden">List of all student enrollments</caption>
       <thead class="table-secondary">
         <tr>
           <th scope="col">#</th>
           <th scope="col">Enrollment ID</th>
           <th scope="col">Student</th>
           <th scope="col">Course</th>
-          <th scope="col">Paid</th>
+          <th scope="col">Admission Fee Paid</th>
+          <th scope="col">Course Fee Paid</th>
           <th scope="col">Amount Remaining</th>
           <th scope="col">Status</th>
           <th scope="col">Enrolled</th>
@@ -131,69 +167,100 @@
         {% for e in enrollments %}
         <tr>
           <td>{{ forloop.counter }}</td>
-          <td><span class="text-primary">{{ e.t_id }}</span></td>
+          <td><span class="text-primary">{{ e.student.student_id }}</span></td>
           <td>
             <a href="{% url 'student_detail' e.student.student_id %}" class="fw-bold text-primary">{{ e.student.full_name }}</a><br>
-            <small>{{ e.student.email }}</small>
+            <small><a href="mailto:{{ e.student.email }}">{{ e.student.email }}</a></small>
           </td>
           <td>{{ e.course.course_name }}</td>
-          <td>₹{{ e.amount_paid|floatformat:2 }}</td>
+          <td>₹{{ e.admission_fee_paid|floatformat:2 }}</td>
+          <td>₹{{ e.course_fee_paid|floatformat:2 }}</td>
           <td>₹{{ e.amount_remaining|floatformat:2 }}</td>
           <td>
             {% if e.payment_status == "due" %}
-              <span class="badge bg-danger">Due</span>
+            <span class="badge bg-danger" aria-label="Due">Due</span>
             {% elif e.payment_status == "partial" %}
-              <span class="badge bg-info">Partial</span>
+            <span class="badge bg-info" aria-label="Partial">Partial</span>
             {% else %}
-              <span class="badge bg-success">Paid</span>
+            <span class="badge bg-success" aria-label="Paid">Paid</span>
             {% endif %}
           </td>
           <td>{{ e.enrollment_date|date:"d-m-Y" }}</td>
           <td>
             <div class="btn-group" role="group" aria-label="Actions">
-              <a href="{% url 'enrollment_detail' e.pk %}" class="btn btn-sm btn-primary" title="View"><i class="fas fa-eye"></i></a>
-              <a href="{% url 'student_edit' e.pk %}" class="btn btn-sm btn-info" title="Edit"><i class="fas fa-edit"></i></a>
-              <a href="{% url 'enrollment_delete' e.pk %}" class="btn btn-sm btn-danger" title="Delete" onclick="return confirm('Delete this enrollment?')"><i class="fas fa-trash"></i></a>
-              <a href="{% url 'download_receipt' e.pk %}" target="_blank" class="btn btn-sm btn-success" title="Receipt"><i class="fas fa-file-invoice"></i></a>
+              <a href="{% url 'enrollment_detail' e.pk %}" class="btn btn-sm btn-primary" title="View">
+                <i class="fas fa-eye" aria-hidden="true"></i><span class="visually-hidden">View</span>
+              </a>
+              <a href="{% url 'enrollment_update' e.pk %}" class="btn btn-sm btn-info" title="Edit">
+                <i class="fas fa-edit" aria-hidden="true"></i><span class="visually-hidden">Edit</span>
+              </a>
+              <a href="{% url 'enrollment_delete' e.pk %}" class="btn btn-sm btn-danger" title="Delete" onclick="return confirm('Delete this enrollment?')">
+                <i class="fas fa-trash" aria-hidden="true"></i><span class="visually-hidden">Delete</span>
+              </a>
+              <a href="{% url 'download_receipt' e.pk %}" target="_blank" class="btn btn-sm btn-success" title="Receipt">
+                <i class="fas fa-file-invoice" aria-hidden="true"></i><span class="visually-hidden">Download Receipt</span>
+              </a>
               <button type="button" class="btn btn-sm btn-warning" title="Add Payment"
-                onclick="openSidePanel('{{ e.pk }}', '{{ e.amount_paid }}', '{{ e.amount_due }}', '{{ e.amount_remaining }}')">
-                <i class="fas fa-rupee-sign"></i>
+                onclick="openSidePanel('{{ e.pk }}', '{{ e.admission_fee_paid|floatformat:2 }}', '{{ e.course_fee_paid|floatformat:2 }}', '{{ e.amount_due|floatformat:2 }}', '{{ e.amount_remaining|floatformat:2 }}')"
+              >
+                <i class="fas fa-rupee-sign" aria-hidden="true"></i><span class="visually-hidden">Add Payment</span>
               </button>
             </div>
           </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="9" class="text-center text-muted">No enrollments yet.</td>
+          <td colspan="10" class="text-center text-muted">No enrollments yet.</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
- 
+
+    <!-- Client-side Pagination Controls (JS will generate here) -->
+    <div id="clientPagination" class="pagination justify-content-center mt-3" role="navigation" aria-label="Enrollment pagination"></div>
+
+ <!-- End .table-responsive -->
 
   <!-- Side Panel for Adding Payment -->
-  <aside id="sidePanel" class="side-panel" aria-hidden="true" aria-label="Add Payment Panel">
+  <aside id="sidePanel" class="side-panel" aria-hidden="true" aria-label="Add Payment Panel" role="region">
     <div class="side-panel-header">Add Payment</div>
     <div class="side-panel-body">
-      <form id="addFeeForm" method="post" action="">
+      <form id="addFeeForm" method="post" action="" novalidate>
         {% csrf_token %}
         <input type="hidden" name="enrollment_id" id="enrollmentId" />
+        <input type="hidden" id="originalAdmissionPaid" />
+        <input type="hidden" id="originalCoursePaid" />
         <input type="hidden" id="originalDueAmount" />
         <input type="hidden" id="originalRemainingAmount" />
 
         <div class="mb-3">
-          <label for="previousAmount" class="form-label">Previously Paid:</label>
-          <input type="text" id="previousAmount" class="form-control" readonly>
+          <label for="previousAdmissionAmount" class="form-label">Admission Fee Paid:</label>
+          <input type="text" id="previousAdmissionAmount" class="form-control" readonly aria-readonly="true" tabindex="-1" />
+        </div>
+
+        <div class="mb-3">
+          <label for="previousCourseAmount" class="form-label">Course Fee Paid:</label>
+          <input type="text" id="previousCourseAmount" class="form-control" readonly aria-readonly="true" tabindex="-1" />
         </div>
 
         <div class="mb-3">
           <label for="newAmount" class="form-label">New Payment:</label>
-          <input type="number" name="amount" id="newAmount" class="form-control" required min="0" step="0.01" />
+          <input type="number" name="amount" id="newAmount" class="form-control" required min="0.01" step="0.01" aria-describedby="paymentHelp" />
+          <small id="paymentHelp" class="form-text text-muted">Enter the payment amount greater than zero.</small>
+        </div>
+
+        <div class="mb-3">
+          <label for="payment_type" class="form-label">Payment Type:</label>
+          <select name="payment_type" id="payment_type" class="form-select" required aria-describedby="paymentTypeHelp">
+            <option value="Course Fee" selected>Course Fee</option>
+            <option value="Admission Fee">Admission Fee</option>
+          </select>
+          <small id="paymentTypeHelp" class="form-text text-muted">Select whether this payment is for admission or course fee.</small>
         </div>
 
         <div class="mb-3">
           <label for="payment_date" class="form-label">Payment Date:</label>
-          <input type="date" name="payment_date" id="payment_date" class="form-control" required>
+          <input type="date" name="payment_date" id="payment_date" class="form-control" required />
         </div>
 
         <div class="mb-3">
@@ -209,7 +276,7 @@
 
         <div class="mb-3">
           <label for="remainingAmount" class="form-label">Remain After Payment:</label>
-          <input type="text" id="remainingAmount" class="form-control" readonly>
+          <input type="text" id="remainingAmount" class="form-control" readonly aria-readonly="true" tabindex="-1" />
         </div>
 
         <div class="side-panel-footer">
@@ -219,59 +286,164 @@
       </form>
     </div>
   </aside>
-
 </div>
 
 <script>
-  // Pending Dues Toggle button
-  document.getElementById('togglePendingDuesBtn').addEventListener('click', function () {
+  // Pending Dues Toggle Button Logic
+  const togglePendingDuesBtn = document.getElementById('togglePendingDuesBtn');
+  togglePendingDuesBtn.addEventListener('click', () => {
     const pendingDiv = document.getElementById('pendingDuesSection');
-    const isHidden = pendingDiv.style.display === 'none';
-    pendingDiv.style.display = isHidden ? '' : 'none';
-    this.innerHTML = isHidden
-      ? '<i class="fas fa-exclamation-circle"></i> Hide Pending Dues'
-      : '<i class="fas fa-exclamation-circle"></i> View Pending Dues';
-    this.classList.toggle('btn-danger', isHidden);
-    this.classList.toggle('btn-outline-danger', !isHidden);
-    this.setAttribute('aria-pressed', isHidden);
+    const isHidden = pendingDiv.style.display === 'none' || pendingDiv.style.display === '';
+    pendingDiv.style.display = isHidden ? 'block' : 'none';
+    togglePendingDuesBtn.innerHTML = isHidden ?
+      '<i class="fas fa-exclamation-circle"></i> Hide Pending Dues' :
+      '<i class="fas fa-exclamation-circle"></i> View Pending Dues';
+    togglePendingDuesBtn.classList.toggle('btn-danger', isHidden);
+    togglePendingDuesBtn.classList.toggle('btn-outline-danger', !isHidden);
+    togglePendingDuesBtn.setAttribute('aria-pressed', isHidden.toString());
+    togglePendingDuesBtn.setAttribute('aria-expanded', isHidden.toString());
   });
 
-  // Format number as currency string (Indian Rupee)
+  // Format currency INR
   function formatCurrency(n) {
-    return `₹${parseFloat(n || 0).toFixed(2)}`;
+    const num = parseFloat(n);
+    if (isNaN(num)) return '₹0.00';
+    return `₹${num.toFixed(2)}`;
   }
 
-  // Show side panel for adding payment with pre-filled data
-  function openSidePanel(id, paid, due, remaining) {
+  // Open side panel with payment details
+  function openSidePanel(id, admissionPaid, coursePaid, due, remaining) {
     document.getElementById('enrollmentId').value = id;
-    document.getElementById('previousAmount').value = formatCurrency(paid);
+    document.getElementById('previousAdmissionAmount').value = formatCurrency(admissionPaid);
+    document.getElementById('previousCourseAmount').value = formatCurrency(coursePaid);
     document.getElementById('newAmount').value = '';
     document.getElementById('remainingAmount').value = formatCurrency(remaining);
+    document.getElementById('originalAdmissionPaid').value = admissionPaid;
+    document.getElementById('originalCoursePaid').value = coursePaid;
     document.getElementById('originalDueAmount').value = due;
     document.getElementById('originalRemainingAmount').value = remaining;
     document.getElementById('addFeeForm').action = `/students/${id}/add-payment/`;
-    document.getElementById('payment_date').value = new Date().toISOString().split('T')[0];  // today
-    document.getElementById('sidePanel').classList.add('open');
-    document.getElementById('sidePanel').setAttribute('aria-hidden', 'false');
+    document.getElementById('payment_date').value = new Date().toISOString().split('T')[0];
+    const sidePanel = document.getElementById('sidePanel');
+    sidePanel.classList.add('open');
+    sidePanel.setAttribute('aria-hidden', 'false');
+    document.getElementById('newAmount').focus();
   }
 
   // Close side panel
   function closeSidePanel() {
-    document.getElementById('sidePanel').classList.remove('open');
-    document.getElementById('sidePanel').setAttribute('aria-hidden', 'true');
+    const sidePanel = document.getElementById('sidePanel');
+    sidePanel.classList.remove('open');
+    sidePanel.setAttribute('aria-hidden', 'true');
   }
 
-  // Dynamically update remaining amount when new payment amount changes
-  document.addEventListener('DOMContentLoaded', function () {
-    const newAmount = document.getElementById('newAmount');
-    if (!newAmount) return;
+  // Update remaining amount dynamically on input
+  document.addEventListener('DOMContentLoaded', () => {
+    const newAmountInput = document.getElementById('newAmount');
+    const paymentTypeSelect = document.getElementById('payment_type');
 
-    newAmount.addEventListener('input', function () {
-      const newAmt = parseFloat(this.value) || 0;
-      const origRemain = parseFloat(document.getElementById('originalRemainingAmount').value) || 0;
-      const balance = Math.max(origRemain - newAmt, 0);
-      document.getElementById('remainingAmount').value = formatCurrency(balance);
-    });
+    function updateRemaining() {
+      let payAmount = parseFloat(newAmountInput.value);
+      if (isNaN(payAmount) || payAmount < 0) payAmount = 0;
+
+      const originalRemainingAmount = parseFloat(document.getElementById('originalRemainingAmount').value) || 0;
+
+      let remaining;
+      if (paymentTypeSelect.value === 'Admission Fee') {
+        remaining = originalRemainingAmount;
+      } else if (paymentTypeSelect.value === 'Course Fee') {
+        remaining = Math.max(originalRemainingAmount - payAmount, 0);
+      } else {
+        remaining = originalRemainingAmount;
+      }
+
+      document.getElementById('remainingAmount').value = formatCurrency(remaining);
+    }
+
+    newAmountInput.addEventListener('input', updateRemaining);
+    paymentTypeSelect.addEventListener('change', updateRemaining);
+
+    updateRemaining();
+  });
+
+  // ================================
+  // Client-side pagination for enrollments table
+  // ================================
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const rowsPerPage = 10;
+    const table = document.querySelector('table.table-bordered.table-hover.bg-white'); // Enrollments table
+    if (!table) return;
+
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    const paginationContainer = document.getElementById('clientPagination');
+
+    let currentPage = 1;
+    const totalPages = Math.ceil(rows.length / rowsPerPage);
+
+    function showPage(page) {
+      if (page < 1) page = 1;
+      if (page > totalPages) page = totalPages;
+      currentPage = page;
+
+      // Hide all rows first
+      rows.forEach(row => {
+        row.style.display = 'none';
+      });
+
+      // Show only rows for the current page
+      const start = (currentPage - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      rows.slice(start, end).forEach(row => {
+        row.style.display = '';
+      });
+
+      // Render pagination controls
+      renderPagination();
+    }
+
+    function renderPagination() {
+      paginationContainer.innerHTML = '';
+
+      // Previous Button
+      const prevBtn = document.createElement('button');
+      prevBtn.textContent = '« Previous';
+      prevBtn.className = 'btn btn-link';
+      prevBtn.disabled = currentPage === 1;
+      prevBtn.setAttribute('aria-label', 'Previous Page');
+      prevBtn.addEventListener('click', () => showPage(currentPage - 1));
+      paginationContainer.appendChild(prevBtn);
+
+      // Page number buttons (show max 5)
+      const maxPagesToShow = 5;
+      let startPage = Math.max(1, currentPage - 2);
+      let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+      if (endPage - startPage < maxPagesToShow - 1) {
+        startPage = Math.max(1, endPage - maxPagesToShow + 1);
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.textContent = i;
+        pageBtn.className = i === currentPage ? 'btn btn-dark mx-1' : 'btn btn-light mx-1';
+        if (i === currentPage) pageBtn.setAttribute('aria-current', 'page');
+        pageBtn.addEventListener('click', () => showPage(i));
+        paginationContainer.appendChild(pageBtn);
+      }
+
+      // Next Button
+      const nextBtn = document.createElement('button');
+      nextBtn.textContent = 'Next »';
+      nextBtn.className = 'btn btn-link';
+      nextBtn.disabled = currentPage === totalPages;
+      nextBtn.setAttribute('aria-label', 'Next Page');
+      nextBtn.addEventListener('click', () => showPage(currentPage + 1));
+      paginationContainer.appendChild(nextBtn);
+    }
+
+    // Initialize: show page 1
+    showPage(1);
   });
 </script>
 
